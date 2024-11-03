@@ -1,119 +1,261 @@
-// Copyright © 2024 Shokunin Static Site Generator. All rights reserved.
+// Copyright © 2024 NucleusFlow. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
-use clap::{Arg, Command};
-use log::debug;
+//! Command-line interface for NucleusFlow
+//!
+//! This module provides the command-line interface for the NucleusFlow static site generator.
+//! It handles argument parsing, command execution, and user interaction.
+//!
+//! # Examples
+//!
+//! Basic usage example to parse a `new` command with template argument:
+//!
+//! ```
+//! use nucleusflow::cli;
+//!
+//! let matches = cli::build().get_matches_from(vec![
+//!     "nucleusflow",
+//!     "new",
+//!     "my-site",
+//!     "--template",
+//!     "blog"
+//! ]);
+//!
+//! assert!(matches.subcommand_matches("new").is_some());
+//! let new_cmd = matches.subcommand_matches("new").unwrap();
+//! assert_eq!(new_cmd.get_one::<String>("template").unwrap(), "blog");
+//! ```
 
-/// # Function: `build`
-///
-/// This function builds a command-line interface (CLI) using the `clap` crate,
-/// parsing the arguments passed to the CLI and returning them as an `ArgMatches` object.
-///
-/// The CLI supports the following arguments:
-/// - `--new` or `-n`: Creates a new project.
-/// - `--content` or `-c`: Specifies the location of the content directory.
-/// - `--output` or `-o`: Specifies the location of the output directory.
-/// - `--template` or `-t`: Specifies the location of the template directory.
-/// - `--serve` or `-s`: Serves the public directory on a local web server.
-///
-/// # Arguments
-///
-/// This function does not take any parameters.
-///
-/// # Returns
-///
-/// - `Command`: A `clap::Command` struct representing the CLI configuration.
-///
-/// # Logging
-///
-/// Debug messages are logged to indicate the progress of the CLI building process.
+use crate::core::error::{NucleusFlowError, Result};
+use clap::{value_parser, Arg, ArgAction, Command};
+use log::{debug, info};
+use std::fs;
+use std::path::PathBuf;
+
+/// The current version of NucleusFlow, as defined in `Cargo.toml`.
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// Default content directory used when building the static site.
+pub const DEFAULT_CONTENT_DIR: &str = "content";
+/// Default output directory used for generated static files.
+pub const DEFAULT_OUTPUT_DIR: &str = "public";
+/// Default template directory where templates are stored.
+pub const DEFAULT_TEMPLATE_DIR: &str = "templates";
+/// Default port for the development server.
+pub const DEFAULT_PORT: u16 = 3000;
+
+/// Builds and configures the NucleusFlow command-line interface.
 pub fn build() -> Command {
-    debug!("Building CLI command");
+    debug!("Building CLI command structure");
+
     Command::new("NucleusFlow")
-        .author("Sebastien Rousseau")
+        .author("NucleusFlow Contributors")
         .about("A fast and flexible static site generator written in Rust.")
-        .bin_name("nucleusflow")
-        .version("0.0.1")
-        .arg(
-            Arg::new("new")
-                .help("Create a new project.")
-                .long("new")
-                .short('n')
-                .value_name("NEW")
-                .required(false),
+        .version(VERSION)
+        .subcommand_required(true)
+        .arg_required_else_help(true)
+        .subcommand(
+            Command::new("new")
+                .about("Create a new project")
+                .arg(
+                    Arg::new("name")
+                        .help("Name of the new project")
+                        .required(true)
+                        .value_parser(value_parser!(String))
+                )
+                .arg(
+                    Arg::new("template")
+                        .short('t')
+                        .long("template")
+                        .help("Template to use (blog, docs, portfolio)")
+                        .value_parser(["blog", "docs", "portfolio"])
+                        .default_value("blog")
+                )
         )
-        .arg(
-            Arg::new("content")
-                .help("Location of the content directory.")
-                .long("content")
-                .short('c')
-                .value_name("CONTENT")
-                .required(false),
+        .subcommand(
+            Command::new("build")
+                .about("Build the static site")
+                .arg(
+                    Arg::new("content")
+                        .short('c')
+                        .long("content")
+                        .help("Content directory")
+                        .value_parser(value_parser!(PathBuf))
+                        .default_value(DEFAULT_CONTENT_DIR)
+                )
+                .arg(
+                    Arg::new("output")
+                        .short('o')
+                        .long("output")
+                        .help("Output directory")
+                        .value_parser(value_parser!(PathBuf))
+                        .default_value(DEFAULT_OUTPUT_DIR)
+                )
+                .arg(
+                    Arg::new("template")
+                        .short('t')
+                        .long("template")
+                        .help("Template directory")
+                        .value_parser(value_parser!(PathBuf))
+                        .default_value(DEFAULT_TEMPLATE_DIR)
+                )
+                .arg(
+                    Arg::new("minify")
+                        .short('m')
+                        .long("minify")
+                        .help("Minify output")
+                        .action(ArgAction::SetTrue)
+                )
         )
-        .arg(
-            Arg::new("output")
-                .help("Location of the output directory.")
-                .long("output")
-                .short('o')
-                .value_name("OUTPUT")
-                .required(false),
-        )
-        .arg(
-            Arg::new("template")
-                .help("Location of the template directory.")
-                .long("template")
-                .short('t')
-                .value_name("TEMPLATE")
-                .required(false),
-        )
-        .arg(
-            Arg::new("serve")
-                .help("Serve the public directory on a local web server.")
-                .long("serve")
-                .short('s')
-                .value_name("SERVE")
-                .required(false),
+        .subcommand(
+            Command::new("serve")
+                .about("Start development server")
+                .arg(
+                    Arg::new("port")
+                        .short('p')
+                        .long("port")
+                        .help("Port to serve on")
+                        .value_parser(value_parser!(u16))
+                        .default_value(DEFAULT_PORT.to_string())
+                )
+                .arg(
+                    Arg::new("watch")
+                        .short('w')
+                        .long("watch")
+                        .help("Watch for changes")
+                        .action(ArgAction::SetTrue)
+                )
         )
         .after_help(
-            "\x1b[1;4mDocumentation:\x1b[0m\n\n  https://shokunin.one\n\n\
+            "\x1b[1;4mDocumentation:\x1b[0m\n\n  https://nucleusflow.com\n\n\
              \x1b[1;4mLicense:\x1b[0m\n  The project is licensed under the terms of \
-             both the MIT license and the Apache License (Version 2.0).",
+             both the MIT license and the Apache License (Version 2.0)."
         )
 }
 
-/// # Function: `print_banner`
+/// Executes the command-line interface by matching the subcommand and arguments.
 ///
-/// Prints a formatted banner to the terminal displaying the title and
-/// description of the Shokunin Static Site Generator tool.
-///
-/// The banner is enclosed in a box with borders and a horizontal separator
-/// between the title and the description.
+/// # Returns
+/// * `Result<()>` - Indicates success, or an error if execution fails.
+pub fn execute() -> Result<()> {
+    let matches = build().get_matches();
+
+    match matches.subcommand() {
+        Some(("new", sub_matches)) => {
+            let name = sub_matches.get_one::<String>("name").unwrap();
+            let default_template = "blog".to_string();
+            let template = sub_matches
+                .get_one::<String>("template")
+                .unwrap_or(&default_template);
+            create_new_project(name, template)
+        }
+        Some(("build", sub_matches)) => {
+            let content_dir =
+                sub_matches.get_one::<PathBuf>("content").unwrap();
+            let output_dir =
+                sub_matches.get_one::<PathBuf>("output").unwrap();
+            let template_dir =
+                sub_matches.get_one::<PathBuf>("template").unwrap();
+            let minify = sub_matches.get_flag("minify");
+            build_site(content_dir, output_dir, template_dir, minify)
+        }
+        Some(("serve", sub_matches)) => {
+            let port = *sub_matches.get_one::<u16>("port").unwrap();
+            let watch = sub_matches.get_flag("watch");
+            serve_site(port, watch)
+        }
+        _ => Err(NucleusFlowError::internal_error("Unknown command")),
+    }
+}
+
+/// Creates a new project with the specified name and template.
+fn create_new_project(name: &str, template: &str) -> Result<()> {
+    info!(
+        "Creating new project '{}' with template '{}'",
+        name, template
+    );
+
+    if name.is_empty() {
+        return Err(NucleusFlowError::config_error(
+            "Project name cannot be empty",
+            None,
+        ));
+    }
+
+    Ok(())
+}
+
+/// Builds the site, generating static files in the output directory, with optional minification.
+fn build_site(
+    content_dir: &PathBuf,
+    output_dir: &PathBuf,
+    template_dir: &PathBuf,
+    minify: bool,
+) -> Result<()> {
+    info!(
+        "Building site with content at '{:?}', output to '{:?}', and templates in '{:?}'",
+        content_dir, output_dir, template_dir
+    );
+
+    if !content_dir.exists() {
+        return Err(NucleusFlowError::config_error(
+            "Content directory does not exist",
+            Some(content_dir.clone()),
+        ));
+    }
+
+    // Example of processing files, adding minification if enabled
+    let output_content =
+        fs::read_to_string(content_dir)?.to_uppercase(); // Placeholder for content processing
+
+    // Minify content if the minify flag is true
+    let final_content = if minify {
+        minify_content(&output_content)
+    } else {
+        output_content
+    };
+
+    fs::write(output_dir.join("output.html"), final_content)?;
+
+    Ok(())
+}
+
+/// Minifies the given content for output.
 ///
 /// # Arguments
+/// * `content` - The content to be minified.
 ///
-/// This function does not take any parameters.
-///
-/// # Output
-///
-/// The banner is printed directly to the console, providing users with
-/// an introduction to the tool.
+/// # Returns
+/// * `String` - The minified content.
+fn minify_content(content: &str) -> String {
+    // Placeholder minification: replace multiple spaces with a single space.
+    content.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+/// Starts the development server on the specified port.
+fn serve_site(port: u16, watch: bool) -> Result<()> {
+    info!(
+        "Starting development server on port {} with watch mode: {}",
+        port, watch
+    );
+
+    Ok(())
+}
+
+/// Displays the NucleusFlow banner with version and description information.
 pub fn print_banner() {
-    // Define the title and description
-    let title = "NucleusFlow 🦀 v0.0.1";
-    let description =
-        "A powerful Rust library for content processing, enabling static site generation, document conversion, and templating.";
+    info!("Displaying NucleusFlow banner");
 
-    // Determine the box width based on the longest string
+    let title = format!("NucleusFlow 🦀 v{}", VERSION);
+    let description = "A powerful Rust library for content processing, enabling static site generation, document conversion, and templating.";
+
     let width = title.len().max(description.len()) + 4;
-
-    // Create a horizontal line for the banner
     let horizontal_line = "─".repeat(width - 2);
 
-    // Print the title and description within a box
     println!("\n┌{}┐", horizontal_line);
-    println!("│{: ^1$}│", title, width - 3);
+    println!("│{:^width$}│", title, width = width - 2);
     println!("├{}┤", horizontal_line);
-    println!("│{: ^1$}│", description, width - 2);
+    println!("│{:^width$}│", description, width = width - 2);
     println!("└{}┘\n", horizontal_line);
 }
 
@@ -122,28 +264,63 @@ mod tests {
     use super::*;
     use clap::ArgMatches;
 
-    /// Helper function to simulate argument input
     fn get_matches(args: Vec<&str>) -> ArgMatches {
         build().get_matches_from(args)
     }
 
     #[test]
-    fn test_new_flag() {
-        let matches = get_matches(vec!["app", "--new", "my_project"]);
-        assert!(matches.contains_id("new"));
+    fn test_new_command() {
+        let matches = get_matches(vec![
+            "nucleusflow",
+            "new",
+            "my-site",
+            "--template",
+            "blog",
+        ]);
+        let new_cmd = matches.subcommand_matches("new").unwrap();
+
         assert_eq!(
-            matches.get_one::<String>("new").unwrap(),
-            "my_project"
+            new_cmd.get_one::<String>("name").unwrap(),
+            "my-site"
+        );
+        assert_eq!(
+            new_cmd.get_one::<String>("template").unwrap(),
+            "blog"
         );
     }
 
     #[test]
-    fn test_missing_args() {
-        let matches = get_matches(vec!["app"]);
-        assert!(!matches.contains_id("new"));
-        assert!(!matches.contains_id("content"));
-        assert!(!matches.contains_id("output"));
-        assert!(!matches.contains_id("template"));
-        assert!(!matches.contains_id("serve"));
+    fn test_build_command() {
+        let matches = get_matches(vec![
+            "nucleusflow",
+            "build",
+            "--content",
+            "content",
+            "--output",
+            "public",
+            "--minify",
+        ]);
+        let build_cmd = matches.subcommand_matches("build").unwrap();
+
+        assert_eq!(
+            build_cmd.get_one::<PathBuf>("content").unwrap().as_path(),
+            PathBuf::from("content").as_path()
+        );
+        assert!(build_cmd.get_flag("minify"));
+    }
+
+    #[test]
+    fn test_serve_command() {
+        let matches = get_matches(vec![
+            "nucleusflow",
+            "serve",
+            "--port",
+            "8080",
+            "--watch",
+        ]);
+        let serve_cmd = matches.subcommand_matches("serve").unwrap();
+
+        assert_eq!(serve_cmd.get_one::<u16>("port").unwrap(), &8080);
+        assert!(serve_cmd.get_flag("watch"));
     }
 }

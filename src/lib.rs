@@ -1,111 +1,311 @@
 // Copyright © 2024 NucleusFlow. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
-//! # NucleusFlow
+//! # NucleusFlow Library
 //!
-//! `nucleusflow` is a library for building static site generators and content processing pipelines. It provides a flexible architecture for content processing, templating, and output generation.
+//! NucleusFlow provides a suite of tools for processing, rendering, and generating
+//! content for static sites or other document-based applications.
+//! This library includes support for content transformation, template rendering, and output
+//! generation with a configurable pipeline for flexible usage.
+//!
+//! For more information, visit the [NucleusFlow documentation](https://docs.rs/nucleusflow).
 
+#![doc = include_str!("../README.md")]
+#![doc(
+    html_favicon_url = "https://kura.pro/nucleusflow/images/favicon.ico",
+    html_logo_url = "https://kura.pro/nucleusflow/images/logos/nucleusflow.svg",
+    html_root_url = "https://docs.rs/nucleusflow"
+)]
+#![crate_name = "nucleusflow"]
+#![crate_type = "lib"]
+
+use crate::core::error::{NucleusFlowError, Result};
 use std::fs;
-use std::{fmt, path::Path};
-use thiserror::Error;
+use std::io::Write;
+use std::path::{Path, PathBuf};
 
-/// The cli module provides functionality for building and handling the command-line interface.
+/// Module containing core utilities, such as configuration and error handling.
+pub mod core {
+    /// Handles configuration of the NucleusFlow application.
+    pub mod config;
+    /// Contains error types and handling for NucleusFlow.
+    pub mod error;
+}
+
+/// Provides command-line interface utilities.
 pub mod cli;
-/// The config module provides functionality for handling configuration loading and parsing.
-pub mod config;
-/// The content module provides functionality for processing content in various formats.
+
+/// Provides content processing utilities.
 pub mod content;
-/// The output module provides functionality for generating output in various formats.
-pub mod output;
-/// The process module provides functionality for processing parsed arguments and executing core actions.
+
+/// Provides output generation utilities.
+pub mod generators;
+
+/// Provides processing pipeline utilities.
 pub mod process;
-/// The template module provides functionality for rendering templates.
+
+/// Provides template rendering utilities.
 pub mod template;
 
-/// Custom error type for NucleusFlow operations
-#[derive(Error, Debug)]
-pub enum NucleusFlowError {
-    /// IO errors
-    #[error("IO error: {0}")]
-    Io(#[from] std::io::Error),
-    /// Configuration errors
-    #[error("Configuration error: {0}")]
-    Config(String),
-    /// Content processing errors
-    #[error("Content processing error: {0}")]
-    ContentProcessing(String),
-    /// Template rendering errors
-    #[error("Template rendering error: {0}")]
-    TemplateRendering(String),
-    /// Output generation errors
-    #[error("Output generation error: {0}")]
-    OutputGeneration(String),
-    /// Process errors
-    #[error("Process error: {0}")]
-    Process(String),
-}
-
-/// Result type alias for NucleusFlow operations
-pub type Result<T> = std::result::Result<T, NucleusFlowError>;
-
-/// Trait for content processors
-pub trait ContentProcessor {
-    /// Process content and return the processed output
+/// Trait for content processing implementations.
+///
+/// Implementations of this trait process content, transforming it based on
+/// a given context.
+pub trait ContentProcessor: Send + Sync + std::fmt::Debug {
+    /// Processes the provided content with an optional context.
     ///
     /// # Arguments
-    ///
-    /// * `content` - A string slice containing the content to be processed
+    /// * `content` - The content to be processed.
+    /// * `context` - An optional context for additional processing.
     ///
     /// # Returns
-    ///
-    /// A `Result` containing the processed content as a `String` if successful,
-    /// or a `NucleusFlowError` if processing fails
-    fn process(&self, content: &str) -> Result<String>;
-}
+    /// * `Result<String>` - The processed content, or an error if processing fails.
+    fn process(
+        &self,
+        content: &str,
+        context: Option<&serde_json::Value>,
+    ) -> Result<String>;
 
-/// Trait for template renderers
-pub trait TemplateRenderer {
-    /// Render a template with the given context
+    /// Validates the content without processing.
     ///
     /// # Arguments
-    ///
-    /// * `template` - A string slice containing the name of the template to render
-    /// * `context` - A reference to a `serde_json::Value` containing the context data for rendering
+    /// * `content` - The content to be validated.
     ///
     /// # Returns
-    ///
-    /// A `Result` containing the rendered content as a `String` if successful,
-    /// or a `NucleusFlowError` if rendering fails
-    fn render(&self, template: &str, context: &serde_json::Value) -> Result<String>;
+    /// * `Result<()>` - Indicates success if the content is valid, or an error if invalid.
+    fn validate(&self, content: &str) -> Result<()>;
 }
 
-/// Trait for output generators
-pub trait OutputGenerator {
-    /// Generate output and write it to the specified path
+/// Trait for template rendering implementations.
+///
+/// This trait defines methods for rendering and validating templates.
+pub trait TemplateRenderer: Send + Sync + std::fmt::Debug {
+    /// Renders a template with the specified context.
     ///
     /// # Arguments
-    ///
-    /// * `content` - A string slice containing the content to be written
-    /// * `output_path` - A `Path` reference specifying where to write the output
+    /// * `template` - The template name or identifier.
+    /// * `context` - The context data for rendering the template.
     ///
     /// # Returns
+    /// * `Result<String>` - The rendered output, or an error if rendering fails.
+    fn render(
+        &self,
+        template: &str,
+        context: &serde_json::Value,
+    ) -> Result<String>;
+
+    /// Validates the template against the context.
     ///
-    /// A `Result` indicating success (`Ok((()))`) or containing a `NucleusFlowError` if the operation fails
-    fn generate(&self, content: &str, output_path: &Path) -> Result<()>;
+    /// # Arguments
+    /// * `template` - The template name or identifier.
+    /// * `context` - The context data.
+    ///
+    /// # Returns
+    /// * `Result<()>` - Indicates success if valid, or an error otherwise.
+    fn validate(
+        &self,
+        template: &str,
+        context: &serde_json::Value,
+    ) -> Result<()>;
 }
 
-/// Configuration for the static site generator
+/// Trait for output generation implementations.
+///
+/// Defines methods for generating output files.
+pub trait OutputGenerator: Send + Sync + std::fmt::Debug {
+    /// Generates output from the given content to the specified path.
+    ///
+    /// # Arguments
+    /// * `content` - The content to be output.
+    /// * `path` - The output file path.
+    /// * `options` - Optional settings for generation.
+    ///
+    /// # Returns
+    /// * `Result<()>` - Indicates success, or an error if generation fails.
+    fn generate(
+        &self,
+        content: &str,
+        path: &Path,
+        options: Option<&serde_json::Value>,
+    ) -> Result<()>;
+
+    /// Validates the path and options for output generation.
+    ///
+    /// # Arguments
+    /// * `path` - The output file path.
+    /// * `options` - Optional settings for generation.
+    ///
+    /// # Returns
+    /// * `Result<()>` - Indicates success if valid, or an error otherwise.
+    fn validate(
+        &self,
+        path: &Path,
+        options: Option<&serde_json::Value>,
+    ) -> Result<()>;
+}
+
+/// Concrete implementation of `ContentProcessor` that processes file content.
+///
+/// This processor transforms content to uppercase as a simple example.
+#[derive(Debug)]
+pub struct FileContentProcessor {
+    /// The base path for content files.
+    pub base_path: PathBuf,
+}
+
+impl FileContentProcessor {
+    /// Creates a new `FileContentProcessor`.
+    pub fn new(base_path: PathBuf) -> Self {
+        Self { base_path }
+    }
+}
+
+impl ContentProcessor for FileContentProcessor {
+    fn process(
+        &self,
+        content: &str,
+        _context: Option<&serde_json::Value>,
+    ) -> Result<String> {
+        Ok(content.to_uppercase())
+    }
+
+    fn validate(&self, _content: &str) -> Result<()> {
+        Ok(())
+    }
+}
+
+/// Concrete implementation of `TemplateRenderer` for rendering HTML templates.
+#[derive(Debug)]
+pub struct HtmlTemplateRenderer {
+    /// The base path for template files.
+    pub base_path: PathBuf,
+}
+
+impl HtmlTemplateRenderer {
+    /// Creates a new `HtmlTemplateRenderer`.
+    pub fn new(base_path: PathBuf) -> Self {
+        Self { base_path }
+    }
+}
+
+impl TemplateRenderer for HtmlTemplateRenderer {
+    fn render(
+        &self,
+        _template: &str,
+        context: &serde_json::Value,
+    ) -> Result<String> {
+        Ok(format!(
+            "<html>{}</html>",
+            context["content"].as_str().unwrap_or("")
+        ))
+    }
+
+    fn validate(
+        &self,
+        _template: &str,
+        _context: &serde_json::Value,
+    ) -> Result<()> {
+        Ok(())
+    }
+}
+
+/// Concrete implementation of `OutputGenerator` for generating HTML files.
+#[derive(Debug)]
+pub struct HtmlOutputGenerator {
+    /// The base path for output files.
+    pub base_path: PathBuf,
+}
+
+impl HtmlOutputGenerator {
+    /// Creates a new `HtmlOutputGenerator`.
+    pub fn new(base_path: PathBuf) -> Self {
+        Self { base_path }
+    }
+}
+
+impl OutputGenerator for HtmlOutputGenerator {
+    fn generate(
+        &self,
+        content: &str,
+        path: &Path,
+        _options: Option<&serde_json::Value>,
+    ) -> Result<()> {
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).map_err(|e| {
+                NucleusFlowError::io_error(parent.to_path_buf(), e)
+            })?;
+        }
+        let mut file = fs::File::create(path)?;
+        file.write_all(content.as_bytes())?;
+        Ok(())
+    }
+
+    fn validate(
+        &self,
+        path: &Path,
+        _options: Option<&serde_json::Value>,
+    ) -> Result<()> {
+        if let Some(parent) = path.parent() {
+            if !parent.exists() {
+                fs::create_dir_all(parent).map_err(|e| {
+                    NucleusFlowError::io_error(parent.to_path_buf(), e)
+                })?;
+            }
+        }
+        Ok(())
+    }
+}
+
+/// Configuration settings for NucleusFlow.
 #[derive(Debug, Clone)]
 pub struct NucleusFlowConfig {
-    /// Path to the content directory
-    pub content_dir: std::path::PathBuf,
-    /// Path to the output directory
-    pub output_dir: std::path::PathBuf,
-    /// Path to the template directory
-    pub template_dir: std::path::PathBuf,
+    /// The directory containing content files.
+    pub content_dir: PathBuf,
+    /// The directory for generated output files.
+    pub output_dir: PathBuf,
+    /// The directory containing template files.
+    pub template_dir: PathBuf,
 }
 
-/// The main struct
+impl NucleusFlowConfig {
+    /// Creates a new `NucleusFlowConfig` and validates directory paths.
+    pub fn new<P: AsRef<Path>>(
+        content_dir: P,
+        output_dir: P,
+        template_dir: P,
+    ) -> Result<Self> {
+        let content_dir = content_dir.as_ref().to_path_buf();
+        let output_dir = output_dir.as_ref().to_path_buf();
+        let template_dir = template_dir.as_ref().to_path_buf();
+
+        for dir in [&content_dir, &template_dir] {
+            if !dir.exists() || !dir.is_dir() {
+                return Err(NucleusFlowError::config_error(
+                    "Invalid directory",
+                    Some(dir.clone()),
+                ));
+            }
+        }
+
+        if !output_dir.exists() {
+            fs::create_dir_all(&output_dir).map_err(|e| {
+                NucleusFlowError::config_error(
+                    format!("Failed to create output directory: {}", e),
+                    Some(output_dir.clone()),
+                )
+            })?;
+        }
+
+        Ok(Self {
+            content_dir,
+            output_dir,
+            template_dir,
+        })
+    }
+}
+
+/// Main content processing pipeline for NucleusFlow.
+#[derive(Debug)]
 pub struct NucleusFlow {
     config: NucleusFlowConfig,
     content_processor: Box<dyn ContentProcessor>,
@@ -113,19 +313,8 @@ pub struct NucleusFlow {
     output_generator: Box<dyn OutputGenerator>,
 }
 
-impl fmt::Debug for NucleusFlow {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("NucleusFlow")
-            .field("config", &self.config)
-            .field("content_processor", &"<dyn ContentProcessor>")
-            .field("template_renderer", &"<dyn TemplateRenderer>")
-            .field("output_generator", &"<dyn OutputGenerator>")
-            .finish()
-    }
-}
-
 impl NucleusFlow {
-    /// Create a new NucleusFlow instance with the given configuration and components
+    /// Creates a new instance of `NucleusFlow`.
     pub fn new(
         config: NucleusFlowConfig,
         content_processor: Box<dyn ContentProcessor>,
@@ -140,90 +329,124 @@ impl NucleusFlow {
         }
     }
 
-    /// Generate the static site
-    pub fn generate(&self) -> Result<()> {
-        // Read content files
-        let content_dir = &self.config.content_dir;
-        for entry in fs::read_dir(content_dir)? {
+    /// Processes content files, transforms, renders, and generates HTML output.
+    pub fn process(&self) -> Result<()> {
+        for entry in fs::read_dir(&self.config.content_dir)? {
             let entry = entry?;
             let path = entry.path();
+
             if path.is_file() {
-                // Read the content
-                let content = fs::read_to_string(&path)?;
-
-                // Process the content
-                let processed_content =
-                    self.content_processor.process(&content)?;
-
-                // Render the template
-                let context = serde_json::json!({
-                    "content": processed_content,
-                    // Add more context variables as needed
-                });
-                let template_name = "default";
-                let rendered_content = self
-                    .template_renderer
-                    .render(template_name, &context)?;
-
-                // Generate the output
-                let relative_path =
-                    path.strip_prefix(content_dir).unwrap();
-                let output_path = self
-                    .config
-                    .output_dir
-                    .join(relative_path)
-                    .with_extension("html");
-                self.output_generator
-                    .generate(&rendered_content, &output_path)?;
+                self.process_file(&path)?;
             }
         }
+        Ok(())
+    }
+
+    /// Processes a single file within the pipeline.
+    ///
+    /// # Arguments
+    /// * `path` - The path to the file to be processed.
+    ///
+    /// # Returns
+    /// * `Result<()>` - Indicates success, or an error if processing fails.
+    fn process_file(&self, path: &Path) -> Result<()> {
+        let content = fs::read_to_string(path)?;
+        let processed =
+            self.content_processor.process(&content, None)?;
+        let context =
+            serde_json::json!({ "content": processed, "path": path });
+
+        let template_name = "default";
+        let rendered =
+            self.template_renderer.render(template_name, &context)?;
+
+        let relative_path = path
+            .strip_prefix(&self.config.content_dir)
+            .map_err(|e| NucleusFlowError::ContentProcessingError {
+                message: format!(
+                    "Failed to determine relative path: {}",
+                    e
+                ),
+                source: None,
+            })?;
+        let output_path = self
+            .config
+            .output_dir
+            .join(relative_path)
+            .with_extension("html");
+
+        self.output_generator.generate(
+            &rendered,
+            &output_path,
+            None,
+        )?;
 
         Ok(())
     }
 }
 
-
-/// Runs the NucleusFlow static site generator.
-///
-/// This function initializes the environment logger, prints the banner, builds the command-line interface,
-/// processes the arguments, and returns a `Result` indicating success or an error.
-///
-/// # Parameters
-///
-/// None.
-///
-/// # Returns
-///
-/// * `Result<()>`: A `Result` indicating success (`Ok(())`) or an error (`Err(NucleusFlowError::Process)`)
-///   if processing the arguments fails.
-pub fn run() -> Result<()> {
-    env_logger::init();
-    cli::print_banner();
-    let cli = cli::build().get_matches();
-    process::args(&cli)
-        .map_err(|e| NucleusFlowError::Process(e.to_string()))
-}
-
 #[cfg(test)]
-mod integration_tests {
-    use std::process::Command;
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
 
     #[test]
-    fn test_banner_display() {
-        let output = Command::new("cargo")
-            .arg("run")
-            .output()
-            .expect("Failed to execute command");
+    fn test_nucleus_flow_config_new() {
+        let temp_dir = TempDir::new().unwrap();
+        let content_path = temp_dir.path().join("content");
+        let output_path = temp_dir.path().join("output");
+        let template_path = temp_dir.path().join("templates");
 
-        let stdout = String::from_utf8_lossy(&output.stdout);
-        println!("{}", stdout);
+        fs::create_dir(&content_path).unwrap();
+        fs::create_dir(&template_path).unwrap();
 
-        assert!(
-            stdout.contains("NucleusFlow 🦀 v0.0.1"),
-            "Banner did not print expected text"
+        let config = NucleusFlowConfig::new(
+            &content_path,
+            &output_path,
+            &template_path,
+        )
+        .unwrap();
+
+        assert_eq!(config.content_dir, content_path);
+        assert_eq!(config.output_dir, output_path);
+        assert_eq!(config.template_dir, template_path);
+    }
+
+    #[test]
+    fn test_nucleus_flow_process() -> Result<()> {
+        let temp_dir = TempDir::new().unwrap();
+        let content_path = temp_dir.path().join("content");
+        let output_path = temp_dir.path().join("output");
+        let template_path = temp_dir.path().join("templates");
+
+        fs::create_dir(&content_path)?;
+        fs::create_dir(&template_path)?;
+
+        let test_content = "test content";
+        let content_file = content_path.join("test.txt");
+        fs::write(&content_file, test_content)?;
+
+        let config = NucleusFlowConfig::new(
+            &content_path,
+            &output_path,
+            &template_path,
+        )?;
+
+        let nucleus = NucleusFlow::new(
+            config,
+            Box::new(FileContentProcessor::new(content_path.clone())),
+            Box::new(HtmlTemplateRenderer::new(template_path.clone())),
+            Box::new(HtmlOutputGenerator::new(output_path.clone())),
         );
-        assert!(stdout.contains(
-            "A powerful Rust library for content processing, enabling static site generation, document conversion, and templating."
-        ));
+
+        nucleus.process()?;
+
+        let output_file = output_path.join("test.html");
+        assert!(output_file.exists());
+
+        let output_content = fs::read_to_string(output_file)?;
+        assert_eq!(output_content, "<html>TEST CONTENT</html>");
+
+        Ok(())
     }
 }

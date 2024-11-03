@@ -46,34 +46,34 @@ nucleusflow = "0.0.1"
 
 Here's a basic example of how to use `nucleusflow`:
 
-```rust
-use nucleusflow::NucleusFlow;
-use nucleusflow::NucleusFlowConfig;
-use nucleusflow::content::MarkdownProcessor;
-use nucleusflow::template::HandlebarsRenderer;
-use nucleusflow::output::HtmlGenerator;
+```rust,no_run
+use nucleusflow::{NucleusFlow, NucleusFlowConfig, FileContentProcessor, HtmlOutputGenerator, HtmlTemplateRenderer};
+use std::path::PathBuf;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = NucleusFlowConfig {
-        content_dir: "content".into(),
-        output_dir: "public".into(),
-        template_dir: "templates".into(),
-    };
+// Create configuration
+let config = NucleusFlowConfig::new(
+    "content",
+    "public",
+    "templates"
+).expect("Failed to create config");
 
-    let nucleus_flow = NucleusFlow::new(
-        config,
-        Box::new(MarkdownProcessor::new()),
-        Box::new(HandlebarsRenderer::new("templates")?),
-        Box::new(HtmlGenerator::new()),
-    );
+// Initialize processors with the concrete implementations
+let content_processor = FileContentProcessor::new(PathBuf::from("content"));
+let template_renderer = HtmlTemplateRenderer::new(PathBuf::from("templates"));
+let output_generator = HtmlOutputGenerator::new(PathBuf::from("public"));
 
-    nucleus_flow.generate()?;
+// Create NucleusFlow instance
+let nucleus = NucleusFlow::new(
+    config,
+    Box::new(content_processor),
+    Box::new(template_renderer),
+    Box::new(output_generator)
+);
 
-    println!("Static site generated successfully!");
-
-    Ok(())
-}
+// Process content
+nucleus.process().expect("Failed to process content");
 ```
+
 
 This example demonstrates setting up NucleusFlow with a Markdown processor, Handlebars templating, and HTML output generation.
 

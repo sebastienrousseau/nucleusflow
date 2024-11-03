@@ -6,44 +6,129 @@
 //! This is the main entry point for the NucleusFlow command-line interface.
 //! It initializes the logger, displays a banner, and runs the main CLI process.
 
-use anyhow::{Context, Result};
+use anyhow::Context;
+use clap::{Parser, Subcommand};
 use log::info;
-use nucleusflow::run;
+use nucleusflow::{
+    FileContentProcessor, HtmlOutputGenerator, HtmlTemplateRenderer,
+    NucleusFlow, NucleusFlowConfig,
+};
+use std::path::PathBuf;
 
-/// The main entry point of the NucleusFlow CLI.
+/// Main command-line interface for NucleusFlow.
+#[derive(Parser)]
+#[command(
+    name = "NucleusFlow",
+    version = "0.0.1",
+    about = "A Static Site Generator"
+)]
+struct Cli {
+    /// Verbose mode (-v, -vv, etc.)
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    verbose: u8,
+
+    /// The action to perform, such as `build` or `generate-assets`
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Build the site from content, templates, and config
+    Build {
+        /// Path to the content directory
+        #[arg(short, long, default_value = "content")]
+        content_dir: String,
+
+        /// Path to the output directory
+        #[arg(short, long, default_value = "public")]
+        output_dir: String,
+
+        /// Path to the template directory
+        #[arg(short, long, default_value = "templates")]
+        template_dir: String,
+    },
+
+    /// Generate static assets without building content
+    GenerateAssets,
+}
+
+/// Initializes and runs the NucleusFlow static site generator.
 ///
 /// This function performs the following steps:
-/// 1. Initializes the logger using `env_logger`.
-/// 2. Runs the main CLI process.
-///
-/// If any step fails, it logs the error and exits with a non-zero status code.
+/// 1. Sets up the logger and displays the CLI banner.
+/// 2. Configures the `NucleusFlowConfig` for content, output, and template directories.
+/// 3. Initializes the main processing components: `FileContentProcessor`, `HtmlTemplateRenderer`, and `HtmlOutputGenerator`.
+/// 4. Creates an instance of `NucleusFlow` and processes the content.
 ///
 /// # Errors
 ///
 /// This function will return an error if:
-/// - The logger fails to initialize.
-/// - The main CLI process encounters an error.
-fn main() -> Result<()> {
-    // Log the start of the SSG CLI process
-    info!("Starting SSG CLI");
+/// - The configuration directories are invalid or inaccessible.
+/// - Any of the main components fail during initialization or content processing.
+///
+/// # Returns
+///
+/// `Ok(())` if the SSG completes processing successfully.
+pub fn run(
+    content_dir: &str,
+    output_dir: &str,
+    template_dir: &str,
+) -> Result<(), anyhow::Error> {
+    // Initialize logger
+    env_logger::init();
+    info!("Starting NucleusFlow SSG...");
 
-    // Run the SSG
-    run().context("Failed to run SSG")?;
+    // Configure directories
+    let config =
+        NucleusFlowConfig::new(content_dir, output_dir, template_dir)
+            .context("Failed to create configuration for NucleusFlow")?;
 
-    // Log the successful completion of the SSG CLI process
-    info!("SSG CLI completed successfully");
+    // Initialize processing components
+    let content_processor =
+        FileContentProcessor::new(PathBuf::from(content_dir));
+    let template_renderer =
+        HtmlTemplateRenderer::new(PathBuf::from(template_dir));
+    let output_generator =
+        HtmlOutputGenerator::new(PathBuf::from(output_dir));
 
+    // Create and run the NucleusFlow instance
+    let nucleus = NucleusFlow::new(
+        config,
+        Box::new(content_processor),
+        Box::new(template_renderer),
+        Box::new(output_generator),
+    );
+
+    nucleus.process().context("Failed to process content")?;
+
+    info!("NucleusFlow SSG completed successfully");
     Ok(())
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+/// The main entry point for the NucleusFlow CLI.
+fn main() {
+    let cli = Cli::parse();
 
-    #[test]
-    fn test_main() {
-        // This test ensures that the main function runs without panicking
-        // It doesn't actually test the functionality, just that it completes
-        let _ = main();
+    if let Err(err) = match &cli.command {
+        Some(Commands::Build {
+            content_dir,
+            output_dir,
+            template_dir,
+        }) => run(content_dir, output_dir, template_dir),
+        Some(Commands::GenerateAssets) => {
+            // Placeholder for generating assets
+            println!("Generating assets...");
+            Ok(())
+        }
+        None => {
+            println!(
+                "No command provided. Use --help for more information."
+            );
+            Ok(())
+        }
+    } {
+        eprintln!("Error: {}", err);
+        std::process::exit(1);
     }
 }
