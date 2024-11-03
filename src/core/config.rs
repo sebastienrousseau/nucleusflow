@@ -38,7 +38,7 @@ use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use toml::Value as TomlValue;
 
-use crate::NucleusFlowError;
+use crate::ProcessingError;
 use crate::Result;
 
 /// Specifies operational profiles for configuration.
@@ -280,7 +280,7 @@ impl Config {
             .get(key)
             .map(|v| {
                 toml::Value::try_into(v.clone()).map_err(|e| {
-                    NucleusFlowError::ConfigError {
+                    ProcessingError::ConfigError {
                         message: format!(
                             "Invalid custom config value: {}",
                             e
@@ -303,7 +303,7 @@ impl Config {
         value: T,
     ) -> Result<()> {
         let value = toml::Value::try_from(value).map_err(|e| {
-            NucleusFlowError::ConfigError {
+            ProcessingError::ConfigError {
                 message: format!("Invalid custom config value: {}", e),
                 path: None,
             }
@@ -339,14 +339,14 @@ impl Default for Config {
 
 fn load_from_file(path: &Path) -> Result<Config> {
     let content = fs::read_to_string(path).map_err(|e| {
-        NucleusFlowError::ConfigError {
+        ProcessingError::ConfigError {
             message: format!("Failed to read config file: {}", e),
             path: Some(path.to_path_buf()),
         }
     })?;
 
     toml::from_str(&content).map_err(|e| {
-        NucleusFlowError::ConfigError {
+        ProcessingError::ConfigError {
             message: format!("Failed to parse config file: {}", e),
             path: Some(path.to_path_buf()),
         }
@@ -387,7 +387,7 @@ fn validate_config(config: &Config) -> Result<()> {
     }
 
     if config.content.extensions.is_empty() {
-        return Err(NucleusFlowError::ConfigError {
+        return Err(ProcessingError::ConfigError {
             message: "No content extensions specified".to_string(),
             path: None,
         });
@@ -441,7 +441,7 @@ fn apply_config_value<T: ToString>(
                         );
                     }
                     _ => {
-                        return Err(NucleusFlowError::config_error(
+                        return Err(ProcessingError::config_error(
                             format!(
                                 "Unknown configuration section: {}",
                                 section
@@ -451,7 +451,7 @@ fn apply_config_value<T: ToString>(
                     }
                 }
             } else {
-                return Err(NucleusFlowError::config_error(
+                return Err(ProcessingError::config_error(
                     format!("Unknown configuration key: {}", key),
                     None,
                 ));
@@ -469,7 +469,7 @@ fn apply_content_value(
     match key {
         "validate" => {
             config.validate = value.parse().map_err(|e| {
-                NucleusFlowError::ConfigError {
+                ProcessingError::ConfigError {
                     message: format!(
                         "Invalid validate value '{}': {}",
                         value, e
@@ -480,7 +480,7 @@ fn apply_content_value(
         }
         "sanitize" => {
             config.sanitize = value.parse().map_err(|e| {
-                NucleusFlowError::ConfigError {
+                ProcessingError::ConfigError {
                     message: format!(
                         "Invalid sanitize value '{}': {}",
                         value, e
@@ -491,7 +491,7 @@ fn apply_content_value(
         }
         "extract_metadata" => {
             config.extract_metadata = value.parse().map_err(|e| {
-                NucleusFlowError::ConfigError {
+                ProcessingError::ConfigError {
                     message: format!(
                         "Invalid extract_metadata value '{}': {}",
                         value, e
@@ -518,7 +518,7 @@ fn apply_template_value(
     match key {
         "strict_mode" => {
             config.strict_mode = value.parse().map_err(|e| {
-                NucleusFlowError::ConfigError {
+                ProcessingError::ConfigError {
                     message: format!(
                         "Invalid strict_mode value '{}': {}",
                         value, e
@@ -529,7 +529,7 @@ fn apply_template_value(
         }
         "cache_templates" => {
             config.cache_templates = value.parse().map_err(|e| {
-                NucleusFlowError::ConfigError {
+                ProcessingError::ConfigError {
                     message: format!(
                         "Invalid cache_templates value '{}': {}",
                         value, e
@@ -556,7 +556,7 @@ fn apply_output_value(
     match key {
         "minify" => {
             config.minify = value.parse().map_err(|e| {
-                NucleusFlowError::ConfigError {
+                ProcessingError::ConfigError {
                     message: format!(
                         "Invalid minify value '{}': {}",
                         value, e
@@ -567,7 +567,7 @@ fn apply_output_value(
         }
         "pretty_print" => {
             config.pretty_print = value.parse().map_err(|e| {
-                NucleusFlowError::ConfigError {
+                ProcessingError::ConfigError {
                     message: format!(
                         "Invalid pretty_print value '{}': {}",
                         value, e
@@ -595,7 +595,7 @@ fn validate_path(
     must_exist: bool,
 ) -> Result<()> {
     if must_exist && !path.exists() {
-        return Err(NucleusFlowError::ConfigError {
+        return Err(ProcessingError::ConfigError {
             message: format!(
                 "{} directory does not exist: {}",
                 name,
@@ -606,7 +606,7 @@ fn validate_path(
     }
 
     if path.exists() && !path.is_dir() {
-        return Err(NucleusFlowError::ConfigError {
+        return Err(ProcessingError::ConfigError {
             message: format!(
                 "{} path is not a directory: {}",
                 name,

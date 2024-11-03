@@ -26,7 +26,7 @@
 //! assert_eq!(new_cmd.get_one::<String>("template").unwrap(), "blog");
 //! ```
 
-use crate::core::error::{NucleusFlowError, Result};
+use crate::core::error::{ProcessingError, Result};
 use clap::{value_parser, Arg, ArgAction, Command};
 use log::{debug, info};
 use std::fs;
@@ -164,7 +164,7 @@ pub fn execute() -> Result<()> {
             let watch = sub_matches.get_flag("watch");
             serve_site(port, watch)
         }
-        _ => Err(NucleusFlowError::internal_error("Unknown command")),
+        _ => Err(ProcessingError::internal_error("Unknown command")),
     }
 }
 
@@ -176,7 +176,7 @@ fn create_new_project(name: &str, template: &str) -> Result<()> {
     );
 
     if name.is_empty() {
-        return Err(NucleusFlowError::config_error(
+        return Err(ProcessingError::config_error(
             "Project name cannot be empty",
             None,
         ));
@@ -198,7 +198,7 @@ fn build_site(
     );
 
     if !content_dir.exists() {
-        return Err(NucleusFlowError::config_error(
+        return Err(ProcessingError::config_error(
             "Content directory does not exist",
             Some(content_dir.clone()),
         ));

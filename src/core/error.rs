@@ -9,34 +9,20 @@ use thiserror::Error;
 
 /// A unified result type for the NucleusFlow library.
 ///
-/// This type alias simplifies function signatures by defining a result type that always uses `NucleusFlowError` as the error variant.
-pub type Result<T> = std::result::Result<T, NucleusFlowError>;
+/// This type alias simplifies function signatures by defining a result type that always uses `ProcessingError` as the error variant.
+pub type Result<T> = std::result::Result<T, ProcessingError>;
 
 /// The main error type for NucleusFlow, encompassing all potential error cases.
 ///
-/// `NucleusFlowError` is an enumerated type that represents different errors that can occur throughout the library. Each variant describes a specific error type with associated details.
+/// `ProcessingError` is an enumerated type that represents different errors that can occur throughout the library. Each variant describes a specific error type with associated details.
 #[derive(Error, Debug)]
-pub enum NucleusFlowError {
-    /// Error related to configuration initialisation or validation.
-    ///
-    /// This error occurs when there is a problem with configuration files or values.
-    #[error("Configuration error: {message}.")]
-    ConfigError {
-        /// Detailed description of the configuration error.
-        message: String,
-        /// Optional path of the configuration file that caused the error.
-        path: Option<PathBuf>,
-    },
-
-    /// Error encountered during content processing.
-    ///
-    /// This variant covers errors in operations such as parsing, validating,
-    /// or transforming content.
-    #[error("Content processing error: {message}.")]
-    ContentProcessingError {
-        /// Detailed description of the content processing error.
-        message: String,
-        /// Optional source error providing additional context, if available.
+pub enum ProcessingError {
+    /// Represents errors that occur during content parsing or processing.
+    #[error("Failed to process content: {details}")]
+    ContentProcessing {
+        /// Detailed description of what went wrong
+        details: String,
+        /// The source error if one exists
         #[source]
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
     },
@@ -53,6 +39,17 @@ pub enum NucleusFlowError {
         /// Optional source error providing additional context, if available.
         #[source]
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    },
+
+    /// Error related to configuration initialisation or validation.
+    ///
+    /// This error occurs when there is a problem with configuration files or values.
+    #[error("Configuration error: {message}.")]
+    ConfigError {
+        /// Detailed description of the configuration error.
+        message: String,
+        /// Optional path of the configuration file that caused the error.
+        path: Option<PathBuf>,
     },
 
     /// Error related to template rendering.
@@ -91,23 +88,43 @@ pub enum NucleusFlowError {
     InternalError(String),
 }
 
-impl From<std::io::Error> for NucleusFlowError {
-    /// Converts a standard IO error into a `NucleusFlowError::IOError`.
+impl From<std::io::Error> for ProcessingError {
+    /// Converts a standard IO error into a `ProcessingError::IOError`.
     ///
     /// # Parameters
     /// - `source`: The IO error encountered.
     ///
     /// # Returns
-    /// - A `NucleusFlowError::IOError` with an empty path if no path is provided.
+    /// - A `ProcessingError::IOError` with an empty path if no path is provided.
     fn from(source: std::io::Error) -> Self {
-        NucleusFlowError::IOError {
+        ProcessingError::IOError {
             path: PathBuf::new(),
             source,
         }
     }
 }
 
-impl NucleusFlowError {
+impl ProcessingError {
+    /// Creates a new ContentProcessing error with the given details.
+    ///
+    /// # Arguments
+    ///
+    /// * `details` - A description of what went wrong
+    /// * `source` - Optional source error
+    ///
+    /// # Returns
+    ///
+    /// A new ProcessingError::ContentProcessing variant
+    pub fn content_processing<S: Into<String>>(
+        details: S,
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    ) -> Self {
+        Self::ContentProcessing {
+            details: details.into(),
+            source,
+        }
+    }
+
     /// Creates a `ConfigError` with a specific message.
     ///
     /// # Parameters
@@ -115,32 +132,14 @@ impl NucleusFlowError {
     /// - `path`: Optional path of the configuration file causing the error.
     ///
     /// # Returns
-    /// - A `NucleusFlowError::ConfigError` containing the message and optional path.
+    /// - A `ProcessingError::ConfigError` containing the message and optional path.
     pub fn config_error<S: Into<String>>(
         message: S,
         path: Option<PathBuf>,
     ) -> Self {
-        NucleusFlowError::ConfigError {
+        ProcessingError::ConfigError {
             message: message.into(),
             path,
-        }
-    }
-
-    /// Creates a `ContentProcessingError` with a specific message and optional source.
-    ///
-    /// # Parameters
-    /// - `message`: A description of the content processing error.
-    /// - `source`: An optional source error providing additional context.
-    ///
-    /// # Returns
-    /// - A `NucleusFlowError::ContentProcessingError` with the message and optional source.
-    pub fn content_processing_error<S: Into<String>>(
-        message: S,
-        source: Option<Box<dyn std::error::Error + Send + Sync>>,
-    ) -> Self {
-        NucleusFlowError::ContentProcessingError {
-            message: message.into(),
-            source,
         }
     }
 
@@ -152,13 +151,13 @@ impl NucleusFlowError {
     /// - `source`: An optional source error providing additional context.
     ///
     /// # Returns
-    /// - A `NucleusFlowError::OutputGenerationError` with the message, path, and optional source.
+    /// - A `ProcessingError::OutputGenerationError` with the message, path, and optional source.
     pub fn output_generation_error<S: Into<String>>(
         message: S,
         path: PathBuf,
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
     ) -> Self {
-        NucleusFlowError::OutputGenerationError {
+        ProcessingError::OutputGenerationError {
             message: message.into(),
             path,
             source,
@@ -173,13 +172,13 @@ impl NucleusFlowError {
     /// - `source`: An optional source error providing additional context.
     ///
     /// # Returns
-    /// - A `NucleusFlowError::TemplateRenderingError` with the message, template name, and optional source.
+    /// - A `ProcessingError::TemplateRenderingError` with the message, template name, and optional source.
     pub fn template_rendering_error<S: Into<String>>(
         message: S,
         template: String,
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
     ) -> Self {
-        NucleusFlowError::TemplateRenderingError {
+        ProcessingError::TemplateRenderingError {
             message: message.into(),
             template,
             source,
@@ -193,9 +192,9 @@ impl NucleusFlowError {
     /// - `source`: The original IO error.
     ///
     /// # Returns
-    /// - A `NucleusFlowError::IOError` with the specified path and source.
+    /// - A `ProcessingError::IOError` with the specified path and source.
     pub fn io_error(path: PathBuf, source: std::io::Error) -> Self {
-        NucleusFlowError::IOError { path, source }
+        ProcessingError::IOError { path, source }
     }
 
     /// Creates a general internal error with a custom message.
@@ -204,8 +203,8 @@ impl NucleusFlowError {
     /// - `message`: A description of the internal error.
     ///
     /// # Returns
-    /// - A `NucleusFlowError::InternalError` with the provided message.
+    /// - A `ProcessingError::InternalError` with the provided message.
     pub fn internal_error<S: Into<String>>(message: S) -> Self {
-        NucleusFlowError::InternalError(message.into())
+        ProcessingError::InternalError(message.into())
     }
 }

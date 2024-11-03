@@ -19,7 +19,7 @@
 #![crate_name = "nucleusflow"]
 #![crate_type = "lib"]
 
-use crate::core::error::{NucleusFlowError, Result};
+use crate::core::error::{ProcessingError, Result};
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -232,7 +232,7 @@ impl OutputGenerator for HtmlOutputGenerator {
     ) -> Result<()> {
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent).map_err(|e| {
-                NucleusFlowError::io_error(parent.to_path_buf(), e)
+                ProcessingError::io_error(parent.to_path_buf(), e)
             })?;
         }
         let mut file = fs::File::create(path)?;
@@ -248,7 +248,7 @@ impl OutputGenerator for HtmlOutputGenerator {
         if let Some(parent) = path.parent() {
             if !parent.exists() {
                 fs::create_dir_all(parent).map_err(|e| {
-                    NucleusFlowError::io_error(parent.to_path_buf(), e)
+                    ProcessingError::io_error(parent.to_path_buf(), e)
                 })?;
             }
         }
@@ -280,7 +280,7 @@ impl NucleusFlowConfig {
 
         for dir in [&content_dir, &template_dir] {
             if !dir.exists() || !dir.is_dir() {
-                return Err(NucleusFlowError::config_error(
+                return Err(ProcessingError::config_error(
                     "Invalid directory",
                     Some(dir.clone()),
                 ));
@@ -289,7 +289,7 @@ impl NucleusFlowConfig {
 
         if !output_dir.exists() {
             fs::create_dir_all(&output_dir).map_err(|e| {
-                NucleusFlowError::config_error(
+                ProcessingError::config_error(
                     format!("Failed to create output directory: {}", e),
                     Some(output_dir.clone()),
                 )
@@ -362,8 +362,8 @@ impl NucleusFlow {
 
         let relative_path = path
             .strip_prefix(&self.config.content_dir)
-            .map_err(|e| NucleusFlowError::ContentProcessingError {
-                message: format!(
+            .map_err(|e| ProcessingError::ContentProcessing {
+                details: format!(
                     "Failed to determine relative path: {}",
                     e
                 ),

@@ -12,7 +12,7 @@
 //! - Partial template support
 //! - Custom helper registration
 
-use crate::{NucleusFlowError, Result, TemplateRenderer};
+use crate::{ProcessingError, Result, TemplateRenderer};
 use handlebars::{
     Context, Handlebars, Helper, Output, RenderContext, RenderError,
     RenderErrorReason,
@@ -50,9 +50,9 @@ pub struct ValidationError {
     pub source: Option<String>,
 }
 
-impl From<ValidationError> for NucleusFlowError {
+impl From<ValidationError> for ProcessingError {
     fn from(error: ValidationError) -> Self {
-        NucleusFlowError::TemplateRenderingError {
+        ProcessingError::TemplateRenderingError {
             message: error.message,
             template: String::new(),
             source: None,
@@ -129,7 +129,7 @@ impl HandlebarsRenderer {
         self.engine
             .write()
             .register_partial(name, template)
-            .map_err(|e| NucleusFlowError::TemplateRenderingError {
+            .map_err(|e| ProcessingError::TemplateRenderingError {
                 message: format!(
                     "Failed to register partial '{}': {}",
                     name, e
@@ -147,7 +147,7 @@ impl HandlebarsRenderer {
 
         for entry in
             std::fs::read_dir(&self.template_dir).map_err(|e| {
-                NucleusFlowError::TemplateRenderingError {
+                ProcessingError::TemplateRenderingError {
                     message: format!(
                         "Failed to read template directory: {}",
                         e
@@ -158,7 +158,7 @@ impl HandlebarsRenderer {
             })?
         {
             let entry = entry.map_err(|e| {
-                NucleusFlowError::TemplateRenderingError {
+                ProcessingError::TemplateRenderingError {
                     message: format!(
                         "Failed to read directory entry: {}",
                         e
@@ -177,7 +177,7 @@ impl HandlebarsRenderer {
                     .file_stem()
                     .and_then(|s| s.to_str())
                     .ok_or_else(|| {
-                        NucleusFlowError::TemplateRenderingError {
+                        ProcessingError::TemplateRenderingError {
                             message: "Invalid template filename"
                                 .to_string(),
                             template: path.display().to_string(),
@@ -187,7 +187,7 @@ impl HandlebarsRenderer {
 
                 let template_content = std::fs::read_to_string(&path)
                     .map_err(|e| {
-                    NucleusFlowError::TemplateRenderingError {
+                    ProcessingError::TemplateRenderingError {
                         message: format!(
                             "Failed to read template file: {}",
                             e
@@ -198,7 +198,7 @@ impl HandlebarsRenderer {
                 })?;
 
                 self.validate_template(&template_content).map_err(
-                    |e| NucleusFlowError::TemplateRenderingError {
+                    |e| ProcessingError::TemplateRenderingError {
                         message: format!(
                             "Template validation failed: {}",
                             e
@@ -214,7 +214,7 @@ impl HandlebarsRenderer {
                         &template_content,
                     )
                     .map_err(|e| {
-                        NucleusFlowError::TemplateRenderingError {
+                        ProcessingError::TemplateRenderingError {
                             message: format!(
                                 "Failed to register template: {}",
                                 e
@@ -320,7 +320,7 @@ impl HandlebarsRenderer {
             .template_cache
             .read()
             .get(template)
-            .ok_or_else(|| NucleusFlowError::TemplateRenderingError {
+            .ok_or_else(|| ProcessingError::TemplateRenderingError {
                 message: format!(
                     "Template '{}' not found in cache",
                     template
@@ -351,7 +351,7 @@ impl HandlebarsRenderer {
 
         for var in required_vars {
             if context.get(&var).is_none() {
-                return Err(NucleusFlowError::TemplateRenderingError {
+                return Err(ProcessingError::TemplateRenderingError {
                     message: format!(
                         "Missing required variable '{}'",
                         var
@@ -377,7 +377,7 @@ impl TemplateRenderer for HandlebarsRenderer {
         }
 
         self.engine.read().render(template, context).map_err(|e| {
-            NucleusFlowError::TemplateRenderingError {
+            ProcessingError::TemplateRenderingError {
                 message: format!("Template rendering failed: {}", e),
                 template: template.to_string(),
                 source: Some(Box::new(e)),
@@ -391,7 +391,7 @@ impl TemplateRenderer for HandlebarsRenderer {
         context: &JsonValue,
     ) -> Result<()> {
         if !self.template_cache.read().contains_key(template) {
-            return Err(NucleusFlowError::TemplateRenderingError {
+            return Err(ProcessingError::TemplateRenderingError {
                 message: format!("Template '{}' not found", template),
                 template: template.to_string(),
                 source: None,
@@ -424,7 +424,7 @@ pub mod helpers {
                 .first()
                 .and_then(|p| p.as_str())
                 .ok_or_else(|| {
-                    NucleusFlowError::TemplateRenderingError {
+                    ProcessingError::TemplateRenderingError {
                     message:
                         "Uppercase helper requires a string parameter"
                             .to_string(),

@@ -22,7 +22,7 @@ use minify_html::{minify, Cfg};
 use parking_lot::RwLock;
 use serde_json::Value as JsonValue;
 
-use crate::{NucleusFlowError, OutputGenerator, Result};
+use crate::{ProcessingError, OutputGenerator, Result};
 
 /// Configuration for output generation
 #[derive(Debug, Clone)]
@@ -102,7 +102,7 @@ impl HtmlGenerator {
     ) -> Result<Self> {
         let path = path.as_ref().to_path_buf();
         if !path.exists() || !path.is_dir() {
-            return Err(NucleusFlowError::OutputGenerationError {
+            return Err(ProcessingError::OutputGenerationError {
                 message: "Invalid asset directory".to_string(),
                 path,
                 source: None,
@@ -135,7 +135,7 @@ impl HtmlGenerator {
             processed =
                 String::from_utf8(minify(processed.as_bytes(), &cfg))
                     .map_err(|e| {
-                    NucleusFlowError::OutputGenerationError {
+                    ProcessingError::OutputGenerationError {
                         message: "HTML minification failed".to_string(),
                         path: PathBuf::new(),
                         source: Some(Box::new(e)),
@@ -286,7 +286,7 @@ impl HtmlGenerator {
     ) -> Result<()> {
         // Validate file extension
         if path.extension().and_then(|s| s.to_str()) != Some("html") {
-            return Err(NucleusFlowError::OutputGenerationError {
+            return Err(ProcessingError::OutputGenerationError {
                 message: "Invalid directory".to_string(),
                 path: path.to_path_buf(),
                 source: None,
@@ -303,7 +303,7 @@ impl HtmlGenerator {
         // Validate options if present
         if let Some(opts) = options {
             if !opts.is_object() {
-                return Err(NucleusFlowError::OutputGenerationError {
+                return Err(ProcessingError::OutputGenerationError {
                     message: "Invalid directory".to_string(),
                     path: path.to_path_buf(),
                     source: None,
@@ -397,7 +397,7 @@ impl OutputGenerator for HtmlGenerator {
 
         // Validate file extension
         if path.extension().and_then(|s| s.to_str()) != Some("html") {
-            return Err(NucleusFlowError::OutputGenerationError {
+            return Err(ProcessingError::OutputGenerationError {
                 message: "Invalid file extension".to_string(),
                 path: path.to_path_buf(),
                 source: None,
@@ -407,7 +407,7 @@ impl OutputGenerator for HtmlGenerator {
         // Validate options if present
         if let Some(opts) = options {
             if !opts.is_object() {
-                return Err(NucleusFlowError::OutputGenerationError {
+                return Err(ProcessingError::OutputGenerationError {
                     message: "Invalid options format".to_string(),
                     path: path.to_path_buf(),
                     source: None,

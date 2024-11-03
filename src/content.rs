@@ -12,7 +12,7 @@
 //! - **Content validation** and **HTML sanitisation** for security
 //! - **TOC (Table of Contents) generation** for Markdown headers
 
-use crate::{ContentProcessor, NucleusFlowError, Result};
+use crate::{ContentProcessor, ProcessingError, Result};
 use pulldown_cmark::{
     html, HeadingLevel, Options as MarkdownOptions, Parser, Tag,
 };
@@ -313,8 +313,8 @@ impl ContentProcessor for MarkdownProcessor {
         if !metadata.custom.is_empty() {
             let json_ld = serde_json::to_string(&metadata.custom)
                 .map_err(|e| {
-                    NucleusFlowError::ContentProcessingError {
-                        message: "Failed to serialize metadata"
+                    ProcessingError::ContentProcessing {
+                        details: "Failed to serialize metadata"
                             .to_string(),
                         source: Some(Box::new(e)),
                     }
@@ -333,8 +333,8 @@ impl ContentProcessor for MarkdownProcessor {
     /// Ensures content is not empty and does not contain potentially harmful content patterns.
     fn validate(&self, content: &str) -> Result<()> {
         if content.is_empty() {
-            return Err(NucleusFlowError::ContentProcessingError {
-                message: "Content cannot be empty".to_string(),
+            return Err(ProcessingError::ContentProcessing {
+                details: "Content cannot be empty".to_string(),
                 source: None,
             });
         }
@@ -342,8 +342,8 @@ impl ContentProcessor for MarkdownProcessor {
         let suspicious_patterns = ["javascript:", "data:", "vbscript:"];
         for pattern in &suspicious_patterns {
             if content.contains(pattern) {
-                return Err(NucleusFlowError::ContentProcessingError {
-                    message: format!(
+                return Err(ProcessingError::ContentProcessing {
+                    details: format!(
                         "Suspicious content pattern detected: {}",
                         pattern
                     ),
