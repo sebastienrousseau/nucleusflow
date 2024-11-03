@@ -280,18 +280,20 @@ impl NucleusFlowConfig {
 
         for dir in [&content_dir, &template_dir] {
             if !dir.exists() || !dir.is_dir() {
-                return Err(ProcessingError::config_error(
+                return Err(ProcessingError::configuration(
                     "Invalid directory",
                     Some(dir.clone()),
+                    None,
                 ));
             }
         }
 
         if !output_dir.exists() {
             fs::create_dir_all(&output_dir).map_err(|e| {
-                ProcessingError::config_error(
+                ProcessingError::configuration(
                     format!("Failed to create output directory: {}", e),
                     Some(output_dir.clone()),
+                    None,
                 )
             })?;
         }

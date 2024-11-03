@@ -27,43 +27,100 @@ pub enum ProcessingError {
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
     },
 
-    /// Error in HTML output generation.
-    ///
-    /// This variant represents issues that arise during the creation of output files, particularly if there is a problem writing to the output path.
-    #[error("Output generation error: {message} at {path:?}.")]
-    OutputGenerationError {
-        /// Description of the output generation error.
-        message: String,
-        /// Path associated with the error.
+    /// Represents errors related to file operations.
+    #[error("File operation failed for '{path}': {details}")]
+    FileOperation {
+        /// The path where the operation failed
         path: PathBuf,
-        /// Optional source error providing additional context, if available.
+        /// Description of what went wrong
+        details: String,
+        /// The underlying IO error if one exists
+        #[source]
+        source: Option<std::io::Error>,
+    },
+
+    /// Represents missing file errors.
+    #[error("File not found: {path}")]
+    FileNotFound {
+        /// The path that wasn't found
+        path: PathBuf,
+        /// Additional context about why the file was being accessed
+        details: String,
+    },
+
+    /// Represents template processing errors.
+    #[error("Template error in '{template_name}': {details}")]
+    TemplateProcessing {
+        /// Name of the template that failed
+        template_name: String,
+        /// Description of what went wrong
+        details: String,
+        /// The source error if one exists
         #[source]
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
     },
 
-    /// Error related to configuration initialisation or validation.
-    ///
-    /// This error occurs when there is a problem with configuration files or values.
-    #[error("Configuration error: {message}.")]
-    ConfigError {
-        /// Detailed description of the configuration error.
-        message: String,
-        /// Optional path of the configuration file that caused the error.
+    /// Represents configuration validation errors.
+    #[error("Configuration error: {details}")]
+    Configuration {
+        /// Description of the configuration error
+        details: String,
+        /// The path to the configuration file if relevant
         path: Option<PathBuf>,
+        /// The source error if one exists
+        #[source]
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
     },
 
-    /// Error related to template rendering.
-    ///
-    /// This variant is used when rendering templates fails, either due to syntax issues or missing templates.
-    #[error(
-        "Template rendering error: {message} in template `{template}`."
-    )]
-    TemplateRenderingError {
-        /// Description of the template rendering error.
-        message: String,
-        /// The specific template file or identifier associated with the error.
-        template: String,
-        /// Optional source error providing additional context, if available.
+    /// Represents validation errors during processing.
+    #[error("Validation failed: {details}")]
+    Validation {
+        /// Description of what failed validation
+        details: String,
+        /// Additional context or data related to the validation
+        context: Option<String>,
+    },
+
+    /// Represents errors during output generation.
+    #[error("Output generation failed for '{path}': {details}")]
+    OutputGeneration {
+        /// The path where output was being generated
+        path: PathBuf,
+        /// Description of what went wrong
+        details: String,
+        /// The source error if one exists
+        #[source]
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    },
+
+    /// Represents serialization/deserialization errors.
+    #[error("Serialization error: {details}")]
+    Serialization {
+        /// Description of what went wrong
+        details: String,
+        /// The source error if one exists
+        #[source]
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    },
+
+    /// Represents plugin-related errors.
+    #[error("Plugin error for '{plugin_name}': {details}")]
+    Plugin {
+        /// Name of the plugin that encountered an error
+        plugin_name: String,
+        /// Description of what went wrong
+        details: String,
+        /// The source error if one exists
+        #[source]
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    },
+
+    /// Represents unexpected or internal errors.
+    #[error("Internal error: {details}")]
+    Internal {
+        /// Description of the internal error
+        details: String,
+        /// The source error if one exists
         #[source]
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
     },
@@ -88,21 +145,7 @@ pub enum ProcessingError {
     InternalError(String),
 }
 
-impl From<std::io::Error> for ProcessingError {
-    /// Converts a standard IO error into a `ProcessingError::IOError`.
-    ///
-    /// # Parameters
-    /// - `source`: The IO error encountered.
-    ///
-    /// # Returns
-    /// - A `ProcessingError::IOError` with an empty path if no path is provided.
-    fn from(source: std::io::Error) -> Self {
-        ProcessingError::IOError {
-            path: PathBuf::new(),
-            source,
-        }
-    }
-}
+
 
 impl ProcessingError {
     /// Creates a new ContentProcessing error with the given details.
@@ -125,62 +168,177 @@ impl ProcessingError {
         }
     }
 
-    /// Creates a `ConfigError` with a specific message.
+    /// Creates a new FileOperation error with the given details.
     ///
-    /// # Parameters
-    /// - `message`: A description of the configuration error.
-    /// - `path`: Optional path of the configuration file causing the error.
+    /// # Arguments
+    ///
+    /// * `path` - The path where the operation failed
+    /// * `details` - A description of what went wrong
+    /// * `source` - Optional IO error
     ///
     /// # Returns
-    /// - A `ProcessingError::ConfigError` containing the message and optional path.
-    pub fn config_error<S: Into<String>>(
-        message: S,
-        path: Option<PathBuf>,
+    ///
+    /// A new ProcessingError::FileOperation variant
+    pub fn file_not_found<P: Into<PathBuf>, S: Into<String>>(
+        path: P,
+        details: S,
+        source: Option<std::io::Error>,
     ) -> Self {
-        ProcessingError::ConfigError {
-            message: message.into(),
-            path,
+        Self::FileOperation {
+            path: path.into(),
+            details: details.into(),
+            source,
         }
     }
 
-    /// Creates an `OutputGenerationError` with a specific message, path, and optional source.
+    /// Creates a new TemplateProcessing error.
     ///
-    /// # Parameters
-    /// - `message`: A description of the output generation error.
-    /// - `path`: The path associated with the error.
-    /// - `source`: An optional source error providing additional context.
+    /// # Arguments
+    ///
+    /// * `template_name` - Name of the template that failed
+    /// * `details` - Description of what went wrong
+    /// * `source` - Optional source error
     ///
     /// # Returns
-    /// - A `ProcessingError::OutputGenerationError` with the message, path, and optional source.
-    pub fn output_generation_error<S: Into<String>>(
-        message: S,
-        path: PathBuf,
+    ///
+    /// A new ProcessingError::TemplateProcessing variant
+    pub fn template_processing<S1: Into<String>, S2: Into<String>>(
+        template_name: S1,
+        details: S2,
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
     ) -> Self {
-        ProcessingError::OutputGenerationError {
-            message: message.into(),
+        Self::TemplateProcessing {
+            template_name: template_name.into(),
+            details: details.into(),
+            source,
+        }
+    }
+
+    /// Creates a new Configuration error.
+    ///
+    /// # Arguments
+    ///
+    /// * `details` - Description of the configuration error
+    /// * `path` - Optional path to the configuration file
+    /// * `source` - Optional source error
+    ///
+    /// # Returns
+    ///
+    /// A new ProcessingError::Configuration variant
+    pub fn configuration<S: Into<String>>(
+        details: S,
+        path: Option<PathBuf>,
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    ) -> Self {
+        Self::Configuration {
+            details: details.into(),
             path,
             source,
         }
     }
 
-    /// Creates a `TemplateRenderingError` with a message, template name, and optional source.
+    /// Creates a new Validation error.
     ///
-    /// # Parameters
-    /// - `message`: A description of the template rendering error.
-    /// - `template`: The template associated with the error.
-    /// - `source`: An optional source error providing additional context.
+    /// # Arguments
+    ///
+    /// * `details` - Description of what failed validation
+    /// * `context` - Optional additional context
     ///
     /// # Returns
-    /// - A `ProcessingError::TemplateRenderingError` with the message, template name, and optional source.
-    pub fn template_rendering_error<S: Into<String>>(
-        message: S,
-        template: String,
+    ///
+    /// A new ProcessingError::Validation variant
+    pub fn validation<S1: Into<String>, S2: Into<String>>(
+        details: S1,
+        context: Option<S2>,
+    ) -> Self {
+        Self::Validation {
+            details: details.into(),
+            context: context.map(|s| s.into()),
+        }
+    }
+
+    /// Creates a new OutputGeneration error.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The path where output was being generated
+    /// * `details` - Description of what went wrong
+    /// * `source` - Optional source error
+    ///
+    /// # Returns
+    ///
+    /// A new ProcessingError::OutputGeneration variant
+    pub fn output_generation<P: Into<PathBuf>, S: Into<String>>(
+        path: P,
+        details: S,
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
     ) -> Self {
-        ProcessingError::TemplateRenderingError {
-            message: message.into(),
-            template,
+        Self::OutputGeneration {
+            path: path.into(),
+            details: details.into(),
+            source,
+        }
+    }
+
+    /// Creates a new Serialization error.
+    ///
+    /// # Arguments
+    ///
+    /// * `details` - Description of what went wrong
+    /// * `source` - Optional source error
+    ///
+    /// # Returns
+    ///
+    /// A new ProcessingError::Serialization variant
+    pub fn serialization<S: Into<String>>(
+        details: S,
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    ) -> Self {
+        Self::Serialization {
+            details: details.into(),
+            source,
+        }
+    }
+
+    /// Creates a new Plugin error.
+    ///
+    /// # Arguments
+    ///
+    /// * `plugin_name` - Name of the plugin that encountered an error
+    /// * `details` - Description of what went wrong
+    /// * `source` - Optional source error
+    ///
+    /// # Returns
+    ///
+    /// A new ProcessingError::Plugin variant
+    pub fn plugin<S1: Into<String>, S2: Into<String>>(
+        plugin_name: S1,
+        details: S2,
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    ) -> Self {
+        Self::Plugin {
+            plugin_name: plugin_name.into(),
+            details: details.into(),
+            source,
+        }
+    }
+
+    /// Creates a new Internal error.
+    ///
+    /// # Arguments
+    ///
+    /// * `details` - Description of the internal error
+    /// * `source` - Optional source error
+    ///
+    /// # Returns
+    ///
+    /// A new ProcessingError::Internal variant
+    pub fn internal<S: Into<String>>(
+        details: S,
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    ) -> Self {
+        Self::Internal {
+            details: details.into(),
             source,
         }
     }
@@ -208,3 +366,100 @@ impl ProcessingError {
         ProcessingError::InternalError(message.into())
     }
 }
+
+impl From<std::io::Error> for ProcessingError {
+    fn from(error: std::io::Error) -> Self {
+        ProcessingError::FileOperation {
+            path: PathBuf::new(),
+            details: error.to_string(),
+            source: Some(error),
+        }
+    }
+}
+
+impl From<serde_json::Error> for ProcessingError {
+    fn from(error: serde_json::Error) -> Self {
+        ProcessingError::Serialization {
+            details: error.to_string(),
+            source: Some(Box::new(error)),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::{Error, ErrorKind};
+    use std::error::Error as StdError;
+
+    #[test]
+    fn test_content_processing() {
+        let error = ProcessingError::content_processing("Failed to process", None);
+        assert!(matches!(error, ProcessingError::ContentProcessing { .. }));
+        assert!(error.to_string().contains("Failed to process"));
+    }
+
+    #[test]
+    fn test_file_not_found_error() {
+        let path = PathBuf::from("/test/path");
+        let io_error = Error::new(ErrorKind::NotFound, "file not found");
+        let error = ProcessingError::file_not_found(&path, "Operation failed", Some(io_error));
+
+        assert!(matches!(error, ProcessingError::FileOperation { .. }));
+        assert!(error.to_string().contains("/test/path"));
+    }
+
+    #[test]
+    fn test_template_processing_error() {
+        let error = ProcessingError::template_processing(
+            "main.hbs",
+            "Template syntax error",
+            None,
+        );
+        assert!(matches!(error, ProcessingError::TemplateProcessing { .. }));
+        assert!(error.to_string().contains("main.hbs"));
+    }
+
+    #[test]
+    fn test_configuration_error() {
+        let path = PathBuf::from("/config/file.toml");
+        let error = ProcessingError::configuration(
+            "Invalid configuration",
+            Some(path),
+            None,
+        );
+        assert!(matches!(error, ProcessingError::Configuration { .. }));
+        assert!(error.to_string().contains("Invalid configuration"));
+    }
+
+    #[test]
+    fn test_io_error_conversion() {
+        let io_error = Error::new(ErrorKind::NotFound, "file not found");
+        let error: ProcessingError = io_error.into();
+        assert!(matches!(error, ProcessingError::FileOperation { .. }));
+    }
+
+    #[test]
+    fn test_validation_error() {
+        let error = ProcessingError::validation(
+            "Invalid input",
+            Some("Expected positive number"),
+        );
+        assert!(matches!(error, ProcessingError::Validation { .. }));
+        assert!(error.to_string().contains("Invalid input"));
+    }
+
+    #[test]
+    fn test_error_chain() {
+        let io_error = Error::new(ErrorKind::Other, "underlying error");
+        let error = ProcessingError::file_not_found(
+            "test.txt",
+            "Failed to read file",
+            Some(io_error),
+        );
+
+        let mut error_chain = error.source().into_iter();
+        assert!(error_chain.next().is_some());
+    }
+}
+

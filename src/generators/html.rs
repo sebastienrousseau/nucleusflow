@@ -102,8 +102,8 @@ impl HtmlGenerator {
     ) -> Result<Self> {
         let path = path.as_ref().to_path_buf();
         if !path.exists() || !path.is_dir() {
-            return Err(ProcessingError::OutputGenerationError {
-                message: "Invalid asset directory".to_string(),
+            return Err(ProcessingError::FileOperation {
+                details: "Invalid asset directory".to_string(),
                 path,
                 source: None,
             });
@@ -135,10 +135,10 @@ impl HtmlGenerator {
             processed =
                 String::from_utf8(minify(processed.as_bytes(), &cfg))
                     .map_err(|e| {
-                    ProcessingError::OutputGenerationError {
-                        message: "HTML minification failed".to_string(),
+                    ProcessingError::FileOperation {
+                        details: "HTML minification failed".to_string(),
                         path: PathBuf::new(),
-                        source: Some(Box::new(e)),
+                        source: Some(std::io::Error::new(std::io::ErrorKind::Other, e)),
                     }
                 })?;
         }
@@ -286,8 +286,8 @@ impl HtmlGenerator {
     ) -> Result<()> {
         // Validate file extension
         if path.extension().and_then(|s| s.to_str()) != Some("html") {
-            return Err(ProcessingError::OutputGenerationError {
-                message: "Invalid directory".to_string(),
+            return Err(ProcessingError::FileOperation {
+                details: "Invalid directory".to_string(),
                 path: path.to_path_buf(),
                 source: None,
             });
@@ -303,8 +303,8 @@ impl HtmlGenerator {
         // Validate options if present
         if let Some(opts) = options {
             if !opts.is_object() {
-                return Err(ProcessingError::OutputGenerationError {
-                    message: "Invalid directory".to_string(),
+                return Err(ProcessingError::FileOperation {
+                    details: "Invalid directory".to_string(),
                     path: path.to_path_buf(),
                     source: None,
                 });
@@ -397,8 +397,8 @@ impl OutputGenerator for HtmlGenerator {
 
         // Validate file extension
         if path.extension().and_then(|s| s.to_str()) != Some("html") {
-            return Err(ProcessingError::OutputGenerationError {
-                message: "Invalid file extension".to_string(),
+            return Err(ProcessingError::FileOperation {
+                details: "Invalid file extension".to_string(),
                 path: path.to_path_buf(),
                 source: None,
             });
@@ -407,8 +407,8 @@ impl OutputGenerator for HtmlGenerator {
         // Validate options if present
         if let Some(opts) = options {
             if !opts.is_object() {
-                return Err(ProcessingError::OutputGenerationError {
-                    message: "Invalid options format".to_string(),
+                return Err(ProcessingError::FileOperation {
+                    details: "Invalid options format".to_string(),
                     path: path.to_path_buf(),
                     source: None,
                 });

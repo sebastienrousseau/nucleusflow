@@ -176,8 +176,9 @@ fn create_new_project(name: &str, template: &str) -> Result<()> {
     );
 
     if name.is_empty() {
-        return Err(ProcessingError::config_error(
+        return Err(ProcessingError::configuration(
             "Project name cannot be empty",
+            None,
             None,
         ));
     }
@@ -198,9 +199,10 @@ fn build_site(
     );
 
     if !content_dir.exists() {
-        return Err(ProcessingError::config_error(
+        return Err(ProcessingError::configuration(
             "Content directory does not exist",
             Some(content_dir.clone()),
+            None,
         ));
     }
 

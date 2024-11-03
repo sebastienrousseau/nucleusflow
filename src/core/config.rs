@@ -280,12 +280,13 @@ impl Config {
             .get(key)
             .map(|v| {
                 toml::Value::try_into(v.clone()).map_err(|e| {
-                    ProcessingError::ConfigError {
-                        message: format!(
+                    ProcessingError::Configuration {
+                        details: format!(
                             "Invalid custom config value: {}",
                             e
                         ),
                         path: None,
+                        source: None,
                     }
                 })
             })
@@ -303,9 +304,10 @@ impl Config {
         value: T,
     ) -> Result<()> {
         let value = toml::Value::try_from(value).map_err(|e| {
-            ProcessingError::ConfigError {
-                message: format!("Invalid custom config value: {}", e),
+            ProcessingError::Configuration {
+                details: format!("Invalid custom config value: {}", e),
                 path: None,
+                source: None,
             }
         })?;
         _ = self.custom.insert(key.to_string(), value);
@@ -339,16 +341,18 @@ impl Default for Config {
 
 fn load_from_file(path: &Path) -> Result<Config> {
     let content = fs::read_to_string(path).map_err(|e| {
-        ProcessingError::ConfigError {
-            message: format!("Failed to read config file: {}", e),
+        ProcessingError::Configuration {
+            details: format!("Failed to read config file: {}", e),
             path: Some(path.to_path_buf()),
+            source: None,
         }
     })?;
 
     toml::from_str(&content).map_err(|e| {
-        ProcessingError::ConfigError {
-            message: format!("Failed to parse config file: {}", e),
+        ProcessingError::Configuration {
+            details: format!("Failed to parse config file: {}", e),
             path: Some(path.to_path_buf()),
+            source: None,
         }
     })
 }
@@ -387,9 +391,10 @@ fn validate_config(config: &Config) -> Result<()> {
     }
 
     if config.content.extensions.is_empty() {
-        return Err(ProcessingError::ConfigError {
-            message: "No content extensions specified".to_string(),
+        return Err(ProcessingError::Configuration {
+            details: "No content extensions specified".to_string(),
             path: None,
+            source: None,
         });
     }
 
@@ -441,18 +446,20 @@ fn apply_config_value<T: ToString>(
                         );
                     }
                     _ => {
-                        return Err(ProcessingError::config_error(
+                        return Err(ProcessingError::configuration(
                             format!(
                                 "Unknown configuration section: {}",
                                 section
                             ),
                             None,
+                            None,
                         ));
                     }
                 }
             } else {
-                return Err(ProcessingError::config_error(
+                return Err(ProcessingError::configuration(
                     format!("Unknown configuration key: {}", key),
+                    None,
                     None,
                 ));
             }
@@ -469,34 +476,37 @@ fn apply_content_value(
     match key {
         "validate" => {
             config.validate = value.parse().map_err(|e| {
-                ProcessingError::ConfigError {
-                    message: format!(
+                ProcessingError::Configuration {
+                    details: format!(
                         "Invalid validate value '{}': {}",
                         value, e
                     ),
                     path: None,
+                    source: None,
                 }
             })?;
         }
         "sanitize" => {
             config.sanitize = value.parse().map_err(|e| {
-                ProcessingError::ConfigError {
-                    message: format!(
+                ProcessingError::Configuration {
+                    details: format!(
                         "Invalid sanitize value '{}': {}",
                         value, e
                     ),
                     path: None,
+                    source: None,
                 }
             })?;
         }
         "extract_metadata" => {
             config.extract_metadata = value.parse().map_err(|e| {
-                ProcessingError::ConfigError {
-                    message: format!(
+                ProcessingError::Configuration {
+                    details: format!(
                         "Invalid extract_metadata value '{}': {}",
                         value, e
                     ),
                     path: None,
+                    source: None,
                 }
             })?;
         }
@@ -518,23 +528,25 @@ fn apply_template_value(
     match key {
         "strict_mode" => {
             config.strict_mode = value.parse().map_err(|e| {
-                ProcessingError::ConfigError {
-                    message: format!(
+                ProcessingError::Configuration {
+                    details: format!(
                         "Invalid strict_mode value '{}': {}",
                         value, e
                     ),
                     path: None,
+                    source: None,
                 }
             })?;
         }
         "cache_templates" => {
             config.cache_templates = value.parse().map_err(|e| {
-                ProcessingError::ConfigError {
-                    message: format!(
+                ProcessingError::Configuration {
+                    details: format!(
                         "Invalid cache_templates value '{}': {}",
                         value, e
                     ),
                     path: None,
+                    source: None,
                 }
             })?;
         }
@@ -556,23 +568,25 @@ fn apply_output_value(
     match key {
         "minify" => {
             config.minify = value.parse().map_err(|e| {
-                ProcessingError::ConfigError {
-                    message: format!(
+                ProcessingError::Configuration {
+                    details: format!(
                         "Invalid minify value '{}': {}",
                         value, e
                     ),
                     path: None,
+                    source: None,
                 }
             })?;
         }
         "pretty_print" => {
             config.pretty_print = value.parse().map_err(|e| {
-                ProcessingError::ConfigError {
-                    message: format!(
+                ProcessingError::Configuration {
+                    details: format!(
                         "Invalid pretty_print value '{}': {}",
                         value, e
                     ),
                     path: None,
+                    source: None,
                 }
             })?;
         }
@@ -595,24 +609,26 @@ fn validate_path(
     must_exist: bool,
 ) -> Result<()> {
     if must_exist && !path.exists() {
-        return Err(ProcessingError::ConfigError {
-            message: format!(
+        return Err(ProcessingError::Configuration {
+            details: format!(
                 "{} directory does not exist: {}",
                 name,
                 path.display()
             ),
             path: Some(path.to_path_buf()),
+            source: None,
         });
     }
 
     if path.exists() && !path.is_dir() {
-        return Err(ProcessingError::ConfigError {
-            message: format!(
+        return Err(ProcessingError::Configuration {
+            details: format!(
                 "{} path is not a directory: {}",
                 name,
                 path.display()
             ),
             path: Some(path.to_path_buf()),
+            source: None,
         });
     }
 

@@ -40,8 +40,8 @@ pub trait TemplateHelper: Send + Sync {
 /// Provides details for template validation errors.
 #[derive(Debug, Clone)]
 pub struct ValidationError {
-    /// Error message detailing the validation issue
-    pub message: String,
+    /// Error details detailing the validation issue
+    pub details: String,
     /// Line number where error occurred, if available
     pub line: Option<usize>,
     /// Column number where error occurred, if available
@@ -52,9 +52,9 @@ pub struct ValidationError {
 
 impl From<ValidationError> for ProcessingError {
     fn from(error: ValidationError) -> Self {
-        ProcessingError::TemplateRenderingError {
-            message: error.message,
-            template: String::new(),
+        ProcessingError::TemplateProcessing {
+            details: error.details,
+            template_name: String::new(),
             source: None,
         }
     }
@@ -129,12 +129,12 @@ impl HandlebarsRenderer {
         self.engine
             .write()
             .register_partial(name, template)
-            .map_err(|e| ProcessingError::TemplateRenderingError {
-                message: format!(
+            .map_err(|e| ProcessingError::TemplateProcessing {
+                details: format!(
                     "Failed to register partial '{}': {}",
                     name, e
                 ),
-                template: name.to_string(),
+                template_name: name.to_string(),
                 source: Some(Box::new(e)),
             })?;
         Ok(self)
@@ -147,23 +147,23 @@ impl HandlebarsRenderer {
 
         for entry in
             std::fs::read_dir(&self.template_dir).map_err(|e| {
-                ProcessingError::TemplateRenderingError {
-                    message: format!(
+                ProcessingError::TemplateProcessing {
+                    details: format!(
                         "Failed to read template directory: {}",
                         e
                     ),
-                    template: String::new(),
+                    template_name: String::new(),
                     source: Some(Box::new(e)),
                 }
             })?
         {
             let entry = entry.map_err(|e| {
-                ProcessingError::TemplateRenderingError {
-                    message: format!(
+                ProcessingError::TemplateProcessing {
+                    details: format!(
                         "Failed to read directory entry: {}",
                         e
                     ),
-                    template: String::new(),
+                    template_name: String::new(),
                     source: Some(Box::new(e)),
                 }
             })?;
@@ -177,33 +177,33 @@ impl HandlebarsRenderer {
                     .file_stem()
                     .and_then(|s| s.to_str())
                     .ok_or_else(|| {
-                        ProcessingError::TemplateRenderingError {
-                            message: "Invalid template filename"
+                        ProcessingError::TemplateProcessing {
+                            details: "Invalid template filename"
                                 .to_string(),
-                            template: path.display().to_string(),
+                            template_name: path.display().to_string(),
                             source: None,
                         }
                     })?;
 
                 let template_content = std::fs::read_to_string(&path)
                     .map_err(|e| {
-                    ProcessingError::TemplateRenderingError {
-                        message: format!(
+                    ProcessingError::TemplateProcessing {
+                        details: format!(
                             "Failed to read template file: {}",
                             e
                         ),
-                        template: path.display().to_string(),
+                        template_name: path.display().to_string(),
                         source: Some(Box::new(e)),
                     }
                 })?;
 
                 self.validate_template(&template_content).map_err(
-                    |e| ProcessingError::TemplateRenderingError {
-                        message: format!(
+                    |e| ProcessingError::TemplateProcessing {
+                        details: format!(
                             "Template validation failed: {}",
                             e
                         ),
-                        template: template_name.to_string(),
+                        template_name: template_name.to_string(),
                         source: None,
                     },
                 )?;
@@ -214,12 +214,12 @@ impl HandlebarsRenderer {
                         &template_content,
                     )
                     .map_err(|e| {
-                        ProcessingError::TemplateRenderingError {
-                            message: format!(
+                        ProcessingError::TemplateProcessing {
+                            details: format!(
                                 "Failed to register template: {}",
                                 e
                             ),
-                            template: template_name.to_string(),
+                            template_name: template_name.to_string(),
                             source: Some(Box::new(e)),
                         }
                     })?;
@@ -271,7 +271,7 @@ impl HandlebarsRenderer {
         _ = engine
             .render_template(template, &JsonValue::Null)
             .map_err(|e| ValidationError {
-                message: e.to_string(),
+                details: e.to_string(),
                 line: e.line_no,
                 column: e.column_no,
                 source: Some(template.to_string()),
@@ -285,7 +285,7 @@ impl HandlebarsRenderer {
                 '{' if in_tag => brackets.push(('{', i)),
                 '}' if brackets.pop().is_none() => {
                     return Err(ValidationError {
-                        message: "Unmatched closing brace".to_string(),
+                        details: "Unmatched closing brace".to_string(),
                         line: None,
                         column: Some(i),
                         source: Some(template.to_string()),
@@ -299,7 +299,7 @@ impl HandlebarsRenderer {
 
         if !brackets.is_empty() {
             return Err(ValidationError {
-                message: "Unmatched opening brace".to_string(),
+                details: "Unmatched opening brace".to_string(),
                 line: None,
                 column: Some(brackets[0].1),
                 source: Some(template.to_string()),
@@ -320,12 +320,12 @@ impl HandlebarsRenderer {
             .template_cache
             .read()
             .get(template)
-            .ok_or_else(|| ProcessingError::TemplateRenderingError {
-                message: format!(
+            .ok_or_else(|| ProcessingError::TemplateProcessing {
+                details: format!(
                     "Template '{}' not found in cache",
                     template
                 ),
-                template: template.to_string(),
+                template_name: template.to_string(),
                 source: None,
             })?
             .clone();
@@ -351,12 +351,12 @@ impl HandlebarsRenderer {
 
         for var in required_vars {
             if context.get(&var).is_none() {
-                return Err(ProcessingError::TemplateRenderingError {
-                    message: format!(
+                return Err(ProcessingError::TemplateProcessing {
+                    details: format!(
                         "Missing required variable '{}'",
                         var
                     ),
-                    template: template.to_string(),
+                    template_name: template.to_string(),
                     source: None,
                 });
             }
@@ -377,9 +377,9 @@ impl TemplateRenderer for HandlebarsRenderer {
         }
 
         self.engine.read().render(template, context).map_err(|e| {
-            ProcessingError::TemplateRenderingError {
-                message: format!("Template rendering failed: {}", e),
-                template: template.to_string(),
+            ProcessingError::TemplateProcessing {
+                details: format!("Template rendering failed: {}", e),
+                template_name: template.to_string(),
                 source: Some(Box::new(e)),
             }
         })
@@ -391,9 +391,9 @@ impl TemplateRenderer for HandlebarsRenderer {
         context: &JsonValue,
     ) -> Result<()> {
         if !self.template_cache.read().contains_key(template) {
-            return Err(ProcessingError::TemplateRenderingError {
-                message: format!("Template '{}' not found", template),
-                template: template.to_string(),
+            return Err(ProcessingError::TemplateProcessing {
+                details: format!("Template '{}' not found", template),
+                template_name: template.to_string(),
                 source: None,
             });
         }
@@ -424,11 +424,11 @@ pub mod helpers {
                 .first()
                 .and_then(|p| p.as_str())
                 .ok_or_else(|| {
-                    ProcessingError::TemplateRenderingError {
-                    message:
+                    ProcessingError::TemplateProcessing {
+                    details:
                         "Uppercase helper requires a string parameter"
                             .to_string(),
-                    template: String::new(),
+                    template_name: String::new(),
                     source: None,
                 }
                 })?;
