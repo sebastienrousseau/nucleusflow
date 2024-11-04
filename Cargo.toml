@@ -82,9 +82,6 @@ assert_cmd = "2.0"                          # Test command-line applications
 criterion = "0.5"                           # Benchmarking library to test performance
 predicates = "3.1.2"                          # Predicate testing library
 
-[unstable]
-profile = true
-
 # -----------------------------------------------------------------------------
 # Dependencies
 # -----------------------------------------------------------------------------
