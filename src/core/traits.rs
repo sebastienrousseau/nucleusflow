@@ -1,6 +1,6 @@
 //! # Core Traits Module
 //!
-//! This module defines the fundamental traits that form the backbone of the NucleusFlow processing library. These traits provide a flexible and extensible foundation for implementing various content processing, transformation, and generation capabilities.
+//! This module defines foundational traits for the NucleusFlow processing library. These traits provide a flexible, composable foundation for implementing various content processing, transformation, and generation capabilities.
 //!
 //! ## Key Traits
 //!
@@ -8,43 +8,40 @@
 //! - [`Transform`]: Trait for content transformation operations
 //! - [`Generator`]: Trait for output generation
 //! - [`Validator`]: Trait for content validation
-//! - [`IntoContext`]: Trait for converting types into a processing context
+//! - [`ProcessingContext`]: Trait for converting types into a processing context
 //! - [`Shareable`]: Trait for wrapping types in a shareable, thread-safe container
 //!
-//! ## Design Philosophy
-//!
-//! The traits in this module follow these key principles:
+//! ## Design Principles
 //!
 //! - **Separation of Concerns**: Each trait has a single, well-defined responsibility
-//! - **Composability**: Traits can be combined to create more complex processing pipelines
+//! - **Composability**: Traits can be combined to create complex processing pipelines
 //! - **Type Safety**: Generic type parameters ensure type-safe processing chains
-//! - **Error Handling**: Consistent error handling through the `Result` type
+//! - **Error Handling**: Consistent error handling via the `Result` type
 
-use std::collections::HashMap;
+use std::fmt::Debug;
 use std::path::Path;
 use std::sync::Arc;
 
-use crate::core::error::Result;
 use parking_lot::RwLock;
+use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+
+use crate::core::error::Result;
 
 /// Core trait for implementing content processors.
 ///
-/// This trait defines the basic interface for any type that can process content
+/// This trait defines the interface for any type that can process content
 /// from one form to another. It's designed to be flexible and composable through
-/// its generic type parameters.
+/// generic type parameters.
 ///
 /// # Type Parameters
 ///
 /// * `Input`: The type of content being processed
 /// * `Output`: The type of content produced
 /// * `Context`: Additional context or configuration for processing
-pub trait Processor: Send + Sync + std::fmt::Debug {
-    /// The type of input content for the processor.
+pub trait Processor: Send + Sync + Debug {
     type Input;
-    /// The type of output content produced by the processor.
     type Output;
-    /// The type of context or configuration used by the processor.
     type Context;
 
     /// Processes the input content using optional context information.
@@ -56,23 +53,15 @@ pub trait Processor: Send + Sync + std::fmt::Debug {
     ///
     /// # Returns
     ///
-    /// A `Result` containing either the processed content or an error.
+    /// Returns a `Result` containing either the processed content or an error.
     fn process(&self, input: Self::Input, context: Option<&Self::Context>) -> Result<Self::Output>;
 }
 
-/// Trait for implementing content transformation operations.
+/// Trait for implementing pure content transformations.
 ///
-/// This trait is designed for processors that transform content from one form to
-/// another while preserving the ability to chain transformations together.
-///
-/// # Type Parameters
-///
-/// * `Input`: The input type for the transformation
-/// * `Output`: The output type produced by the transformation
-pub trait Transform: Send + Sync + std::fmt::Debug {
-    /// The type of input content for the transformation
+/// This trait is for processors that transform content without side effects, ideal for pure transformations that don't require additional context.
+pub trait Transform: Send + Sync + Debug {
     type Input;
-    /// The type of output content produced by the transformation
     type Output;
 
     /// Transforms the input content into the output format.
@@ -83,7 +72,7 @@ pub trait Transform: Send + Sync + std::fmt::Debug {
     ///
     /// # Returns
     ///
-    /// A `Result` containing either the transformed content or an error.
+    /// Returns a `Result` containing either the transformed content or an error.
     fn transform(&self, input: Self::Input) -> Result<Self::Output>;
 }
 
@@ -91,7 +80,7 @@ pub trait Transform: Send + Sync + std::fmt::Debug {
 ///
 /// This trait defines the interface for types that can generate output in various
 /// formats, with support for configuration options and validation.
-pub trait Generator: Send + Sync + std::fmt::Debug {
+pub trait Generator: Send + Sync + Debug {
     /// Generates output from the given content.
     ///
     /// # Arguments
@@ -102,7 +91,7 @@ pub trait Generator: Send + Sync + std::fmt::Debug {
     ///
     /// # Returns
     ///
-    /// A `Result` indicating success or failure of the generation process.
+    /// Returns `Ok(())` if generation succeeds, or an error if it fails.
     fn generate(&self, content: &str, path: &Path, options: Option<&JsonValue>) -> Result<()>;
 
     /// Validates the generation parameters without performing the generation.
@@ -114,7 +103,7 @@ pub trait Generator: Send + Sync + std::fmt::Debug {
     ///
     /// # Returns
     ///
-    /// A `Result` indicating whether the parameters are valid.
+    /// Returns `Ok(())` if validation succeeds, or an error if it fails.
     fn validate(&self, path: &Path, options: Option<&JsonValue>) -> Result<()>;
 }
 
@@ -122,8 +111,7 @@ pub trait Generator: Send + Sync + std::fmt::Debug {
 ///
 /// This trait provides a standard interface for validating content before
 /// processing or transformation occurs.
-pub trait Validator: Send + Sync + std::fmt::Debug {
-    /// The type of input content to validate.
+pub trait Validator: Send + Sync + Debug {
     type Input;
 
     /// Validates the input content.
@@ -134,20 +122,19 @@ pub trait Validator: Send + Sync + std::fmt::Debug {
     ///
     /// # Returns
     ///
-    /// A `Result` indicating whether the content is valid.
+    /// Returns `Ok(())` if validation succeeds, or an error if it fails.
     fn validate(&self, input: &Self::Input) -> Result<()>;
 }
 
-/// Trait for types that can be converted into a processing context.
+/// Trait for types that can provide processing context.
 ///
-/// This trait provides a standard way to convert various types into
-/// processing context objects that can be used with processors.
-pub trait IntoContext {
+/// This trait provides a standard way to convert various types into processing context objects.
+pub trait ProcessingContext {
     /// Converts the type into a processing context.
     ///
     /// # Returns
     ///
-    /// A `JsonValue` representing the processing context.
+    /// Returns a `JsonValue` representing the processing context.
     fn into_context(self) -> JsonValue;
 }
 
@@ -155,68 +142,101 @@ pub trait IntoContext {
 ///
 /// This trait provides a standard way to wrap types in thread-safe
 /// reference-counted containers for sharing between processors.
-pub trait Shareable: Sized + Send + Sync + std::fmt::Debug {
+pub trait Shareable: Sized + Send + Sync + Debug {
     /// Converts the type into a shareable form.
     ///
     /// # Returns
     ///
-    /// An `Arc<RwLock<Self>>` containing the shareable value.
+    /// Returns an `Arc<RwLock<Self>>` containing the shareable value.
     fn into_shared(self) -> Arc<RwLock<Self>>;
 }
 
 // Blanket implementation of Shareable for all eligible types
-impl<T: Send + Sync + std::fmt::Debug + 'static> Shareable for T {
+impl<T: Send + Sync + Debug + 'static> Shareable for T {
     fn into_shared(self) -> Arc<RwLock<Self>> {
         Arc::new(RwLock::new(self))
     }
 }
 
-// Implementation of IntoContext for JsonValue
-impl IntoContext for JsonValue {
-    fn into_context(self) -> JsonValue {
-        self
+/// Struct representing configuration options for processors.
+///
+/// Provides configurable options for processing behavior across various processor implementations.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProcessingOptions {
+    /// Enable strict mode for processing
+    #[serde(default)]
+    pub strict_mode: bool,
+    /// Enable validation before processing
+    #[serde(default = "default_true")]
+    pub validate: bool,
+    /// Enable caching of processed content
+    #[serde(default = "default_true")]
+    pub cache_enabled: bool,
+    /// Custom options for specific processors
+    #[serde(default)]
+    pub custom: JsonValue,
+}
+
+impl Default for ProcessingOptions {
+    fn default() -> Self {
+        Self {
+            strict_mode: false,
+            validate: true,
+            cache_enabled: true,
+            custom: JsonValue::Null,
+        }
     }
 }
 
-/// Wrapper type for HashMap to allow IntoContext implementation
-#[derive(Debug)]
-pub struct ContextMap(HashMap<String, String>);
-
-impl IntoContext for ContextMap {
-    fn into_context(self) -> JsonValue {
-        serde_json::to_value(self.0).unwrap_or(JsonValue::Null)
-    }
+// Helper function for serde defaults
+fn default_true() -> bool {
+    true
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::json;
     use std::fs;
+    use std::collections::HashMap;
     use tempfile::TempDir;
 
     #[test]
-    fn test_processor_implementation() {
+    fn test_processor() {
         #[derive(Debug)]
         struct TestProcessor;
 
         impl Processor for TestProcessor {
             type Input = String;
             type Output = String;
-            type Context = JsonValue;
+            type Context = ProcessingOptions;
 
-            fn process(&self, input: Self::Input, _context: Option<&Self::Context>) -> Result<Self::Output> {
+            fn process(&self, input: Self::Input, context: Option<&Self::Context>) -> Result<Self::Output> {
+                if let Some(ctx) = context {
+                    if ctx.strict_mode && input.is_empty() {
+                        return Err(crate::core::error::ProcessingError::Validation {
+                            details: "Input cannot be empty in strict mode".to_string(),
+                            context: None,
+                        });
+                    }
+                }
                 Ok(input.to_uppercase())
             }
         }
 
         let processor = TestProcessor;
-        let result = processor.process("test".to_string(), None).unwrap();
-        assert_eq!(result, "TEST");
+        let options = ProcessingOptions { strict_mode: true, ..Default::default() };
+
+        // Test with valid input
+        let result = processor.process("test".to_string(), Some(&options));
+        assert_eq!(result.unwrap(), "TEST");
+
+        // Test with empty input in strict mode
+        let result = processor.process("".to_string(), Some(&options));
+        assert!(result.is_err());
     }
 
     #[test]
-    fn test_transform_implementation() {
+    fn test_transform() {
         #[derive(Debug)]
         struct TestTransform;
 
@@ -235,12 +255,61 @@ mod tests {
     }
 
     #[test]
-    fn test_generator_implementation() {
+    fn test_validator() {
+        #[derive(Debug)]
+        struct TestValidator;
+
+        impl Validator for TestValidator {
+            type Input = String;
+
+            fn validate(&self, input: &Self::Input) -> Result<()> {
+                if input.is_empty() {
+                    return Err(crate::core::error::ProcessingError::Validation {
+                        details: "Input cannot be empty".to_string(),
+                        context: None,
+                    });
+                }
+                Ok(())
+            }
+        }
+
+        let validator = TestValidator;
+        assert!(validator.validate(&"test".to_string()).is_ok());
+        assert!(validator.validate(&"".to_string()).is_err());
+    }
+
+    #[test]
+    fn test_processing_context() {
+        #[derive(Debug, Clone)]
+        struct TestContext {
+            settings: HashMap<String, String>,
+        }
+
+        impl ProcessingContext for TestContext {
+            fn into_context(self) -> JsonValue {
+                serde_json::to_value(self.settings).unwrap_or(JsonValue::Null)
+            }
+        }
+
+        let mut settings = HashMap::new();
+        settings.insert("key".to_string(), "value".to_string());
+
+        let context = TestContext { settings };
+        let json_context = context.into_context();
+
+        assert_eq!(json_context["key"], "value");
+    }
+
+    #[test]
+    fn test_generator() {
         #[derive(Debug)]
         struct TestGenerator;
 
         impl Generator for TestGenerator {
             fn generate(&self, content: &str, path: &Path, _options: Option<&JsonValue>) -> Result<()> {
+                if let Some(parent) = path.parent() {
+                    fs::create_dir_all(parent)?;
+                }
                 fs::write(path, content)?;
                 Ok(())
             }
@@ -256,46 +325,12 @@ mod tests {
         }
 
         let temp_dir = TempDir::new().unwrap();
-        let output_path = temp_dir.path().join("output.txt");
+        let test_file = temp_dir.path().join("test.txt");
         let generator = TestGenerator;
 
-        generator.generate("test content", &output_path, None).unwrap();
-        assert!(output_path.exists());
-        assert_eq!(fs::read_to_string(output_path).unwrap(), "test content");
-    }
-
-    #[test]
-    fn test_validator_implementation() {
-        #[derive(Debug)]
-        struct TestValidator;
-
-        impl Validator for TestValidator {
-            type Input = String;
-
-            fn validate(&self, input: &Self::Input) -> Result<()> {
-                if input.is_empty() {
-                    Err(crate::core::error::ProcessingError::Validation {
-                        details: "Input cannot be empty".to_string(),
-                        context: None,
-                    })
-                } else {
-                    Ok(())
-                }
-            }
-        }
-
-        let validator = TestValidator;
-        assert!(validator.validate(&"test".to_string()).is_ok());
-        assert!(validator.validate(&"".to_string()).is_err());
-    }
-
-    #[test]
-    fn test_into_context() {
-        let mut map = HashMap::new();
-        _ = map.insert("key".to_string(), "value".to_string());
-        let context_map = ContextMap(map);
-        let context = context_map.into_context();
-        assert_eq!(context, json!({"key": "value"}));
+        generator.generate("test content", &test_file, None).unwrap();
+        assert!(test_file.exists());
+        assert_eq!(fs::read_to_string(test_file).unwrap(), "test content");
     }
 
     #[test]
@@ -307,9 +342,32 @@ mod tests {
 
         let state = TestState { counter: 0 };
         let shared = state.into_shared();
-        assert_eq!(shared.read().counter, 0);
 
-        shared.write().counter += 1;
-        assert_eq!(shared.read().counter, 1);
+        {
+            let mut write_guard = shared.write();
+            write_guard.counter += 1;
+        }
+
+        let read_guard = shared.read();
+        assert_eq!(read_guard.counter, 1);
+    }
+
+    #[test]
+    fn test_processing_options() {
+        let default_options = ProcessingOptions::default();
+        assert!(!default_options.strict_mode);
+        assert!(default_options.validate);
+        assert!(default_options.cache_enabled);
+
+        let custom_options = ProcessingOptions {
+            strict_mode: true,
+            validate: false,
+            cache_enabled: false,
+            custom: serde_json::json!({"key": "value"}),
+        };
+        assert!(custom_options.strict_mode);
+        assert!(!custom_options.validate);
+        assert!(!custom_options.cache_enabled);
+        assert_eq!(custom_options.custom["key"], "value");
     }
 }
