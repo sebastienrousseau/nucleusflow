@@ -15,21 +15,20 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CARGO_INCREMENTAL: "0"
-      RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Cllvm-args=--inline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests"
-      RUSTDOCFLAGS: "-Zprofile -Ccodegen-units=1 -Cllvm-args=--inline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests"
+      RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests"
+      RUSTDOCFLAGS: "-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests"
 
     steps:
       # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Setup Rust nightly (specify a version known to support -Zprofile)
+      # Setup Rust nightly
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         id: toolchain
         with:
-          toolchain: nightly-2023-08-10  # Example of a compatible nightly version
-          components: llvm-tools-preview  # Required for profiling
+          toolchain: nightly
           override: true
 
       # Configure cache for Cargo
@@ -50,7 +49,7 @@ jobs:
           command: test
           args: "--workspace"
 
-      # Install grcov for coverage report generation
+      # Install grcov
       - uses: actions-rs/grcov@v0.1
         id: coverage
 
