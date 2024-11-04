@@ -23,12 +23,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Setup Rust nightly
+      # Setup Rust stable
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         id: toolchain
         with:
-          toolchain: nightly
+          toolchain: stable
           override: true
 
       # Configure cache for Cargo
