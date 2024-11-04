@@ -23,13 +23,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Setup Rust nightly (try specifying a known good nightly version)
+      # Install Rust and set to nightly toolchain
       - name: Install Rust nightly
-        uses: actions-rs/toolchain@v1
-        id: toolchain
-        with:
-          toolchain: nightly-2023-01-01  # Specify a stable nightly version if needed
-          override: true
+        run: rustup toolchain install nightly
+
+      # Set the default toolchain to nightly for the job
+      - name: Set default to nightly
+        run: rustup default nightly
 
       # Confirm the Rust toolchain version
       - name: Confirm Rust version
@@ -44,7 +44,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/bin
             ~/.cargo/git
-          key: linux-${{ steps.toolchain.outputs.rustc_hash }}-rust-cov-${{ hashFiles('**/Cargo.lock') }}
+          key: linux-${{ runner.os }}-rust-cov-${{ hashFiles('**/Cargo.lock') }}
 
       # Run tests with all features on nightly
       - name: Test (cargo test)
