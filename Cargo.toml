@@ -64,6 +64,7 @@ path = "src/main.rs"                        # Path to the binary entry point
 # Optional features that can be enabled or disabled.
 default = []                                # No default features enabled
 async = []                                  # Placeholder for future asynchronous feature support
+cli = []                                    # Enable command-line interface support
 
 # -----------------------------------------------------------------------------
 # Build Dependencies
@@ -102,7 +103,7 @@ serde_json = "1.0"
 serde_yml = "0.0.12"
 staticdatagen = "0.0.1"
 tempfile = "3.13.0"
-thiserror = "1.0"
+thiserror = "1.0.67"
 toml = "0.8.19"
 
 # -----------------------------------------------------------------------------

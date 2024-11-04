@@ -20,6 +20,7 @@
 #![crate_type = "lib"]
 
 use crate::core::error::{ProcessingError, Result};
+use crate::core::traits::Generator;
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -30,6 +31,8 @@ pub mod core {
     pub mod config;
     /// Contains error types and handling for NucleusFlow.
     pub mod error;
+    /// Defines common traits for content processing, rendering, and generation.
+    pub mod traits;
 }
 
 /// Provides command-line interface utilities.
@@ -109,41 +112,6 @@ pub trait TemplateRenderer: Send + Sync + std::fmt::Debug {
     ) -> Result<()>;
 }
 
-/// Trait for output generation implementations.
-///
-/// Defines methods for generating output files.
-pub trait OutputGenerator: Send + Sync + std::fmt::Debug {
-    /// Generates output from the given content to the specified path.
-    ///
-    /// # Arguments
-    /// * `content` - The content to be output.
-    /// * `path` - The output file path.
-    /// * `options` - Optional settings for generation.
-    ///
-    /// # Returns
-    /// * `Result<()>` - Indicates success, or an error if generation fails.
-    fn generate(
-        &self,
-        content: &str,
-        path: &Path,
-        options: Option<&serde_json::Value>,
-    ) -> Result<()>;
-
-    /// Validates the path and options for output generation.
-    ///
-    /// # Arguments
-    /// * `path` - The output file path.
-    /// * `options` - Optional settings for generation.
-    ///
-    /// # Returns
-    /// * `Result<()>` - Indicates success if valid, or an error otherwise.
-    fn validate(
-        &self,
-        path: &Path,
-        options: Option<&serde_json::Value>,
-    ) -> Result<()>;
-}
-
 /// Concrete implementation of `ContentProcessor` that processes file content.
 ///
 /// This processor transforms content to uppercase as a simple example.
@@ -209,7 +177,7 @@ impl TemplateRenderer for HtmlTemplateRenderer {
     }
 }
 
-/// Concrete implementation of `OutputGenerator` for generating HTML files.
+/// Concrete implementation of `Generator` for generating HTML files.
 #[derive(Debug)]
 pub struct HtmlOutputGenerator {
     /// The base path for output files.
@@ -223,7 +191,7 @@ impl HtmlOutputGenerator {
     }
 }
 
-impl OutputGenerator for HtmlOutputGenerator {
+impl Generator for HtmlOutputGenerator {
     fn generate(
         &self,
         content: &str,
@@ -312,7 +280,7 @@ pub struct NucleusFlow {
     config: NucleusFlowConfig,
     content_processor: Box<dyn ContentProcessor>,
     template_renderer: Box<dyn TemplateRenderer>,
-    output_generator: Box<dyn OutputGenerator>,
+    output_generator: Box<dyn Generator>,
 }
 
 impl NucleusFlow {
@@ -321,7 +289,7 @@ impl NucleusFlow {
         config: NucleusFlowConfig,
         content_processor: Box<dyn ContentProcessor>,
         template_renderer: Box<dyn TemplateRenderer>,
-        output_generator: Box<dyn OutputGenerator>,
+        output_generator: Box<dyn Generator>,
     ) -> Self {
         Self {
             config,

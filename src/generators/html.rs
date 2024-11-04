@@ -22,7 +22,7 @@ use minify_html::{minify, Cfg};
 use parking_lot::RwLock;
 use serde_json::Value as JsonValue;
 
-use crate::{ProcessingError, OutputGenerator, Result};
+use crate::{ProcessingError, Generator, Result};
 
 /// Configuration for output generation
 #[derive(Debug, Clone)]
@@ -351,7 +351,7 @@ impl Default for HtmlGenerator {
     }
 }
 
-impl OutputGenerator for HtmlGenerator {
+impl Generator for HtmlGenerator {
     fn generate(
         &self,
         content: &str,
