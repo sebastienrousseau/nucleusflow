@@ -23,12 +23,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Setup Rust nightly
+      # Setup Rust nightly (specify a version known to support -Zprofile)
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         id: toolchain
         with:
-          toolchain: nightly
+          toolchain: nightly-2023-08-10  # Example of a compatible nightly version
+          components: llvm-tools-preview  # Required for profiling
           override: true
 
       # Configure cache for Cargo
