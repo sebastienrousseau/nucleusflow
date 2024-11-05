@@ -40,8 +40,11 @@ use crate::core::error::Result;
 /// * `Output`: The type of content produced
 /// * `Context`: Additional context or configuration for processing
 pub trait Processor: Send + Sync + Debug {
+    /// `Input` the type of content being processed
     type Input;
+    /// `Output` the type of content produced
     type Output;
+    /// `Context` additional context or configuration for processing
     type Context;
 
     /// Processes the input content using optional context information.
@@ -61,7 +64,9 @@ pub trait Processor: Send + Sync + Debug {
 ///
 /// This trait is for processors that transform content without side effects, ideal for pure transformations that don't require additional context.
 pub trait Transform: Send + Sync + Debug {
+    /// `Input` the type of content to transform
     type Input;
+    /// `Output` the type of content produced
     type Output;
 
     /// Transforms the input content into the output format.
@@ -112,6 +117,7 @@ pub trait Generator: Send + Sync + Debug {
 /// This trait provides a standard interface for validating content before
 /// processing or transformation occurs.
 pub trait Validator: Send + Sync + Debug {
+    /// `Input` the type of content to validate
     type Input;
 
     /// Validates the input content.
@@ -292,7 +298,7 @@ mod tests {
         }
 
         let mut settings = HashMap::new();
-        settings.insert("key".to_string(), "value".to_string());
+        _ = settings.insert("key".to_string(), "value".to_string());
 
         let context = TestContext { settings };
         let json_context = context.into_context();
