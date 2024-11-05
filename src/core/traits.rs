@@ -57,7 +57,11 @@ pub trait Processor: Send + Sync + Debug {
     /// # Returns
     ///
     /// Returns a `Result` containing either the processed content or an error.
-    fn process(&self, input: Self::Input, context: Option<&Self::Context>) -> Result<Self::Output>;
+    fn process(
+        &self,
+        input: Self::Input,
+        context: Option<&Self::Context>,
+    ) -> Result<Self::Output>;
 }
 
 /// Trait for implementing pure content transformations.
@@ -97,7 +101,12 @@ pub trait Generator: Send + Sync + Debug {
     /// # Returns
     ///
     /// Returns `Ok(())` if generation succeeds, or an error if it fails.
-    fn generate(&self, content: &str, path: &Path, options: Option<&JsonValue>) -> Result<()>;
+    fn generate(
+        &self,
+        content: &str,
+        path: &Path,
+        options: Option<&JsonValue>,
+    ) -> Result<()>;
 
     /// Validates the generation parameters without performing the generation.
     ///
@@ -109,7 +118,11 @@ pub trait Generator: Send + Sync + Debug {
     /// # Returns
     ///
     /// Returns `Ok(())` if validation succeeds, or an error if it fails.
-    fn validate(&self, path: &Path, options: Option<&JsonValue>) -> Result<()>;
+    fn validate(
+        &self,
+        path: &Path,
+        options: Option<&JsonValue>,
+    ) -> Result<()>;
 }
 
 /// Trait for implementing content validation.
@@ -202,8 +215,8 @@ fn default_true() -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs;
     use std::collections::HashMap;
+    use std::fs;
     use tempfile::TempDir;
 
     #[test]
@@ -216,7 +229,11 @@ mod tests {
             type Output = String;
             type Context = ProcessingOptions;
 
-            fn process(&self, input: Self::Input, context: Option<&Self::Context>) -> Result<Self::Output> {
+            fn process(
+                &self,
+                input: Self::Input,
+                context: Option<&Self::Context>,
+            ) -> Result<Self::Output> {
                 if let Some(ctx) = context {
                     if ctx.strict_mode && input.is_empty() {
                         return Err(crate::core::error::ProcessingError::Validation {
@@ -230,10 +247,14 @@ mod tests {
         }
 
         let processor = TestProcessor;
-        let options = ProcessingOptions { strict_mode: true, ..Default::default() };
+        let options = ProcessingOptions {
+            strict_mode: true,
+            ..Default::default()
+        };
 
         // Test with valid input
-        let result = processor.process("test".to_string(), Some(&options));
+        let result =
+            processor.process("test".to_string(), Some(&options));
         assert_eq!(result.unwrap(), "TEST");
 
         // Test with empty input in strict mode
@@ -250,7 +271,10 @@ mod tests {
             type Input = String;
             type Output = String;
 
-            fn transform(&self, input: Self::Input) -> Result<Self::Output> {
+            fn transform(
+                &self,
+                input: Self::Input,
+            ) -> Result<Self::Output> {
                 Ok(input.chars().rev().collect())
             }
         }
@@ -293,7 +317,8 @@ mod tests {
 
         impl ProcessingContext for TestContext {
             fn into_context(self) -> JsonValue {
-                serde_json::to_value(self.settings).unwrap_or(JsonValue::Null)
+                serde_json::to_value(self.settings)
+                    .unwrap_or(JsonValue::Null)
             }
         }
 
@@ -312,7 +337,12 @@ mod tests {
         struct TestGenerator;
 
         impl Generator for TestGenerator {
-            fn generate(&self, content: &str, path: &Path, _options: Option<&JsonValue>) -> Result<()> {
+            fn generate(
+                &self,
+                content: &str,
+                path: &Path,
+                _options: Option<&JsonValue>,
+            ) -> Result<()> {
                 if let Some(parent) = path.parent() {
                     fs::create_dir_all(parent)?;
                 }
@@ -320,7 +350,11 @@ mod tests {
                 Ok(())
             }
 
-            fn validate(&self, path: &Path, _options: Option<&JsonValue>) -> Result<()> {
+            fn validate(
+                &self,
+                path: &Path,
+                _options: Option<&JsonValue>,
+            ) -> Result<()> {
                 if let Some(parent) = path.parent() {
                     if !parent.exists() {
                         fs::create_dir_all(parent)?;
@@ -334,9 +368,14 @@ mod tests {
         let test_file = temp_dir.path().join("test.txt");
         let generator = TestGenerator;
 
-        generator.generate("test content", &test_file, None).unwrap();
+        generator
+            .generate("test content", &test_file, None)
+            .unwrap();
         assert!(test_file.exists());
-        assert_eq!(fs::read_to_string(test_file).unwrap(), "test content");
+        assert_eq!(
+            fs::read_to_string(test_file).unwrap(),
+            "test content"
+        );
     }
 
     #[test]

@@ -312,12 +312,9 @@ impl ContentProcessor for MarkdownProcessor {
 
         if !metadata.custom.is_empty() {
             let json_ld = serde_json::to_string(&metadata.custom)
-                .map_err(|e| {
-                    ProcessingError::ContentProcessing {
-                        details: "Failed to serialize metadata"
-                            .to_string(),
-                        source: Some(Box::new(e)),
-                    }
+                .map_err(|e| ProcessingError::ContentProcessing {
+                    details: "Failed to serialize metadata".to_string(),
+                    source: Some(Box::new(e)),
                 })?;
             Ok(format!(
                 "{}\n<script type=\"application/ld+json\">{}</script>",

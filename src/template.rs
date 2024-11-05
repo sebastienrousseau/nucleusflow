@@ -423,14 +423,12 @@ pub mod helpers {
             let text = params
                 .first()
                 .and_then(|p| p.as_str())
-                .ok_or_else(|| {
-                    ProcessingError::TemplateProcessing {
+                .ok_or_else(|| ProcessingError::TemplateProcessing {
                     details:
                         "Uppercase helper requires a string parameter"
                             .to_string(),
                     template_name: String::new(),
                     source: None,
-                }
                 })?;
             Ok(JsonValue::String(text.to_uppercase()))
         }

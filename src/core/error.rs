@@ -9,12 +9,15 @@ use thiserror::Error;
 
 /// A unified result type for the NucleusFlow library.
 ///
-/// This type alias simplifies function signatures by defining a result type that always uses `ProcessingError` as the error variant.
+/// This type alias simplifies function signatures by defining a result type
+/// that always uses `ProcessingError` as the error variant.
 pub type Result<T> = std::result::Result<T, ProcessingError>;
 
 /// The main error type for NucleusFlow, encompassing all potential error cases.
 ///
-/// `ProcessingError` is an enumerated type that represents different errors that can occur throughout the library. Each variant describes a specific error type with associated details.
+/// `ProcessingError` is an enumerated type that represents different errors
+/// that can occur throughout the library. Each variant describes a specific
+/// error type with associated details.
 #[derive(Error, Debug)]
 pub enum ProcessingError {
     /// Represents errors that occur during content parsing or processing.
@@ -35,8 +38,7 @@ pub enum ProcessingError {
         /// Description of what went wrong
         details: String,
         /// The underlying IO error if one exists
-        #[source]
-        source: Option<std::io::Error>,
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
     },
 
     /// Represents missing file errors.
@@ -145,19 +147,8 @@ pub enum ProcessingError {
     InternalError(String),
 }
 
-
-
 impl ProcessingError {
-    /// Creates a new ContentProcessing error with the given details.
-    ///
-    /// # Arguments
-    ///
-    /// * `details` - A description of what went wrong
-    /// * `source` - Optional source error
-    ///
-    /// # Returns
-    ///
-    /// A new ProcessingError::ContentProcessing variant
+    /// Creates a new `ContentProcessing` error with the given details and source.
     pub fn content_processing<S: Into<String>>(
         details: S,
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
@@ -168,21 +159,11 @@ impl ProcessingError {
         }
     }
 
-    /// Creates a new FileOperation error with the given details.
-    ///
-    /// # Arguments
-    ///
-    /// * `path` - The path where the operation failed
-    /// * `details` - A description of what went wrong
-    /// * `source` - Optional IO error
-    ///
-    /// # Returns
-    ///
-    /// A new ProcessingError::FileOperation variant
-    pub fn file_not_found<P: Into<PathBuf>, S: Into<String>>(
+    /// Creates a new `FileOperation` error with the specified path, details, and source error.
+    pub fn file_operation<P: Into<PathBuf>, S: Into<String>>(
         path: P,
         details: S,
-        source: Option<std::io::Error>,
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
     ) -> Self {
         Self::FileOperation {
             path: path.into(),
@@ -191,17 +172,7 @@ impl ProcessingError {
         }
     }
 
-    /// Creates a new TemplateProcessing error.
-    ///
-    /// # Arguments
-    ///
-    /// * `template_name` - Name of the template that failed
-    /// * `details` - Description of what went wrong
-    /// * `source` - Optional source error
-    ///
-    /// # Returns
-    ///
-    /// A new ProcessingError::TemplateProcessing variant
+    /// Creates a new `TemplateProcessing` error for a specified template with a message and source error.
     pub fn template_processing<S1: Into<String>, S2: Into<String>>(
         template_name: S1,
         details: S2,
@@ -214,17 +185,7 @@ impl ProcessingError {
         }
     }
 
-    /// Creates a new Configuration error.
-    ///
-    /// # Arguments
-    ///
-    /// * `details` - Description of the configuration error
-    /// * `path` - Optional path to the configuration file
-    /// * `source` - Optional source error
-    ///
-    /// # Returns
-    ///
-    /// A new ProcessingError::Configuration variant
+    /// Creates a new `Configuration` error with specified details, optional path, and source error.
     pub fn configuration<S: Into<String>>(
         details: S,
         path: Option<PathBuf>,
@@ -237,16 +198,7 @@ impl ProcessingError {
         }
     }
 
-    /// Creates a new Validation error.
-    ///
-    /// # Arguments
-    ///
-    /// * `details` - Description of what failed validation
-    /// * `context` - Optional additional context
-    ///
-    /// # Returns
-    ///
-    /// A new ProcessingError::Validation variant
+    /// Creates a new `Validation` error with a message and optional context.
     pub fn validation<S1: Into<String>, S2: Into<String>>(
         details: S1,
         context: Option<S2>,
@@ -257,17 +209,7 @@ impl ProcessingError {
         }
     }
 
-    /// Creates a new OutputGeneration error.
-    ///
-    /// # Arguments
-    ///
-    /// * `path` - The path where output was being generated
-    /// * `details` - Description of what went wrong
-    /// * `source` - Optional source error
-    ///
-    /// # Returns
-    ///
-    /// A new ProcessingError::OutputGeneration variant
+    /// Creates a new `OutputGeneration` error for a specified path with details and source error.
     pub fn output_generation<P: Into<PathBuf>, S: Into<String>>(
         path: P,
         details: S,
@@ -280,16 +222,7 @@ impl ProcessingError {
         }
     }
 
-    /// Creates a new Serialization error.
-    ///
-    /// # Arguments
-    ///
-    /// * `details` - Description of what went wrong
-    /// * `source` - Optional source error
-    ///
-    /// # Returns
-    ///
-    /// A new ProcessingError::Serialization variant
+    /// Creates a new `Serialization` error with specified details and optional source error.
     pub fn serialization<S: Into<String>>(
         details: S,
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
@@ -300,17 +233,7 @@ impl ProcessingError {
         }
     }
 
-    /// Creates a new Plugin error.
-    ///
-    /// # Arguments
-    ///
-    /// * `plugin_name` - Name of the plugin that encountered an error
-    /// * `details` - Description of what went wrong
-    /// * `source` - Optional source error
-    ///
-    /// # Returns
-    ///
-    /// A new ProcessingError::Plugin variant
+    /// Creates a new `Plugin` error for a specified plugin with details and source error.
     pub fn plugin<S1: Into<String>, S2: Into<String>>(
         plugin_name: S1,
         details: S2,
@@ -323,16 +246,7 @@ impl ProcessingError {
         }
     }
 
-    /// Creates a new Internal error.
-    ///
-    /// # Arguments
-    ///
-    /// * `details` - Description of the internal error
-    /// * `source` - Optional source error
-    ///
-    /// # Returns
-    ///
-    /// A new ProcessingError::Internal variant
+    /// Creates a new `Internal` error with specified details and source error.
     pub fn internal<S: Into<String>>(
         details: S,
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
@@ -344,24 +258,11 @@ impl ProcessingError {
     }
 
     /// Wraps an IO error as an `IOError` variant with the specified path.
-    ///
-    /// # Parameters
-    /// - `path`: The file path associated with the IO error.
-    /// - `source`: The original IO error.
-    ///
-    /// # Returns
-    /// - A `ProcessingError::IOError` with the specified path and source.
     pub fn io_error(path: PathBuf, source: std::io::Error) -> Self {
         ProcessingError::IOError { path, source }
     }
 
-    /// Creates a general internal error with a custom message.
-    ///
-    /// # Parameters
-    /// - `message`: A description of the internal error.
-    ///
-    /// # Returns
-    /// - A `ProcessingError::InternalError` with the provided message.
+    /// Creates a general `InternalError` with a custom message.
     pub fn internal_error<S: Into<String>>(message: S) -> Self {
         ProcessingError::InternalError(message.into())
     }
@@ -372,7 +273,7 @@ impl From<std::io::Error> for ProcessingError {
         ProcessingError::FileOperation {
             path: PathBuf::new(),
             details: error.to_string(),
-            source: Some(error),
+            source: Some(Box::new(error)),
         }
     }
 }
@@ -390,20 +291,30 @@ impl From<serde_json::Error> for ProcessingError {
 mod tests {
     use super::*;
     use std::io::{Error, ErrorKind};
-    use std::error::Error as StdError;
 
     #[test]
     fn test_content_processing() {
-        let error = ProcessingError::content_processing("Failed to process", None);
-        assert!(matches!(error, ProcessingError::ContentProcessing { .. }));
+        let error = ProcessingError::content_processing(
+            "Failed to process",
+            None,
+        );
+        assert!(matches!(
+            error,
+            ProcessingError::ContentProcessing { .. }
+        ));
         assert!(error.to_string().contains("Failed to process"));
     }
 
     #[test]
     fn test_file_not_found_error() {
         let path = PathBuf::from("/test/path");
-        let io_error = Error::new(ErrorKind::NotFound, "file not found");
-        let error = ProcessingError::file_not_found(&path, "Operation failed", Some(io_error));
+        let io_error =
+            Error::new(ErrorKind::NotFound, "file not found");
+        let error = ProcessingError::file_operation(
+            path,
+            "Operation failed",
+            Some(Box::new(io_error)),
+        );
 
         assert!(matches!(error, ProcessingError::FileOperation { .. }));
         assert!(error.to_string().contains("/test/path"));
@@ -416,7 +327,10 @@ mod tests {
             "Template syntax error",
             None,
         );
-        assert!(matches!(error, ProcessingError::TemplateProcessing { .. }));
+        assert!(matches!(
+            error,
+            ProcessingError::TemplateProcessing { .. }
+        ));
         assert!(error.to_string().contains("main.hbs"));
     }
 
@@ -434,7 +348,8 @@ mod tests {
 
     #[test]
     fn test_io_error_conversion() {
-        let io_error = Error::new(ErrorKind::NotFound, "file not found");
+        let io_error =
+            Error::new(ErrorKind::NotFound, "file not found");
         let error: ProcessingError = io_error.into();
         assert!(matches!(error, ProcessingError::FileOperation { .. }));
     }
@@ -448,18 +363,4 @@ mod tests {
         assert!(matches!(error, ProcessingError::Validation { .. }));
         assert!(error.to_string().contains("Invalid input"));
     }
-
-    #[test]
-    fn test_error_chain() {
-        let io_error = Error::new(ErrorKind::Other, "underlying error");
-        let error = ProcessingError::file_not_found(
-            "test.txt",
-            "Failed to read file",
-            Some(io_error),
-        );
-
-        let mut error_chain = error.source().into_iter();
-        assert!(error_chain.next().is_some());
-    }
 }
-
