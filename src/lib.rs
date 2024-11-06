@@ -38,14 +38,14 @@ pub mod core {
 /// Provides command-line interface utilities.
 pub mod cli;
 
-/// Provides content processing utilities.
-pub mod content;
-
 /// Provides output generation utilities.
 pub mod generators;
 
 /// Provides processing pipeline utilities.
 pub mod process;
+
+/// Provides processors for content transformation.
+pub mod processors;
 
 /// Provides template rendering utilities.
 pub mod template;
