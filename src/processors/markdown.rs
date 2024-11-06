@@ -53,10 +53,33 @@ const MAX_CONTENT_SIZE: usize = 10 * 1024 * 1024;
 
 /// List of allowed HTML tags that won't be stripped during sanitization
 const ALLOWED_HTML_TAGS: &[&str] = &[
-    "p", "br", "h1", "h2", "h3", "h4", "h5", "h6",
-    "strong", "em", "del", "ul", "ol", "li", "code",
-    "pre", "blockquote", "hr", "table", "thead", "tbody",
-    "tr", "th", "td", "img", "a", "nav"
+    "p",
+    "br",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "strong",
+    "em",
+    "del",
+    "ul",
+    "ol",
+    "li",
+    "code",
+    "pre",
+    "blockquote",
+    "hr",
+    "table",
+    "thead",
+    "tbody",
+    "tr",
+    "th",
+    "td",
+    "img",
+    "a",
+    "nav",
 ];
 
 /// Configuration options for markdown processing.
@@ -158,11 +181,9 @@ impl MarkdownProcessor {
     /// Enables strikethrough support in Markdown processing.
     pub fn with_strikethrough(mut self, enable: bool) -> Self {
         if enable {
-            self.options
-                .insert(MarkdownOptions::ENABLE_STRIKETHROUGH);
+            self.options.insert(MarkdownOptions::ENABLE_STRIKETHROUGH);
         } else {
-            self.options
-                .remove(MarkdownOptions::ENABLE_STRIKETHROUGH);
+            self.options.remove(MarkdownOptions::ENABLE_STRIKETHROUGH);
         }
         self
     }
@@ -271,54 +292,54 @@ impl MarkdownProcessor {
     }
 
     /// Generates an accessible Table of Contents.
-fn generate_toc(&self, content: &str) -> Result<String> {
-    let mut toc = String::from(
+    fn generate_toc(&self, content: &str) -> Result<String> {
+        let mut toc = String::from(
         "<nav class=\"toc\" aria-label=\"Table of Contents\">\n<ul>\n",
     );
-    let mut entries = Vec::new();
-    let parser = Parser::new_ext(content, self.options);
-    let mut current_text = String::new();
-    let mut current_level = None;
+        let mut entries = Vec::new();
+        let parser = Parser::new_ext(content, self.options);
+        let mut current_text = String::new();
+        let mut current_level = None;
 
-    for event in parser {
-        match event {
-            Event::Start(Tag::Heading { level, .. }) => {
-                current_text.clear();
-                current_level = Some(level);
-            }
-            Event::Text(text) => {
-                current_text.push_str(&text);
-            }
-            Event::End(_) => {
-                if let Some(level) = current_level.take() {
-                    let level_num = match level {
-                        HeadingLevel::H1 => 1,
-                        HeadingLevel::H2 => 2,
-                        HeadingLevel::H3 => 3,
-                        HeadingLevel::H4 => 4,
-                        HeadingLevel::H5 => 5,
-                        HeadingLevel::H6 => 6,
-                    };
+        for event in parser {
+            match event {
+                Event::Start(Tag::Heading { level, .. }) => {
+                    current_text.clear();
+                    current_level = Some(level);
+                }
+                Event::Text(text) => {
+                    current_text.push_str(&text);
+                }
+                Event::End(_) => {
+                    if let Some(level) = current_level.take() {
+                        let level_num = match level {
+                            HeadingLevel::H1 => 1,
+                            HeadingLevel::H2 => 2,
+                            HeadingLevel::H3 => 3,
+                            HeadingLevel::H4 => 4,
+                            HeadingLevel::H5 => 5,
+                            HeadingLevel::H6 => 6,
+                        };
 
-                    if level_num <= self.config.toc_max_level {
-                        let id = self.generate_heading_id(&current_text);
-                        entries.push(TocEntry {
-                            text: current_text.clone(),
-                            level: level_num,
-                            id,
-                        });
+                        if level_num <= self.config.toc_max_level {
+                            let id =
+                                self.generate_heading_id(&current_text);
+                            entries.push(TocEntry {
+                                text: current_text.clone(),
+                                level: level_num,
+                                id,
+                            });
+                        }
                     }
                 }
+                _ => {}
             }
-            _ => {}
         }
+
+        self.build_toc_html(&mut toc, &entries)?;
+        toc.push_str("</ul>\n</nav>");
+        Ok(toc)
     }
-
-    self.build_toc_html(&mut toc, &entries)?;
-    toc.push_str("</ul>\n</nav>");
-    Ok(toc)
-}
-
 
     /// Generates a unique ID for a heading.
     fn generate_heading_id(&self, text: &str) -> String {
@@ -351,12 +372,9 @@ fn generate_toc(&self, content: &str) -> Result<String> {
             }
 
             toc.push_str(&format!(
-    "<li><a href=\"#{}\" aria-label=\"{}\">{}</a></li>\n",
-    entry.id,
-    entry.text,
-    entry.text
-));
-
+                "<li><a href=\"#{}\" aria-label=\"{}\">{}</a></li>\n",
+                entry.id, entry.text, entry.text
+            ));
         }
 
         while current_level > 1 {
@@ -468,55 +486,55 @@ impl Processor for MarkdownProcessor {
     type Context = JsonValue;
 
     fn process(
-    &self,
-    content: String,
-    context: Option<&Self::Context>,
-) -> Result<Self::Output> {
-    // Validate content
-    self.validate(&content)?;
+        &self,
+        content: String,
+        context: Option<&Self::Context>,
+    ) -> Result<Self::Output> {
+        // Validate content
+        self.validate(&content)?;
 
-    // Extract metadata
-    let metadata = self.extract_metadata(&content)?;
+        // Extract metadata
+        let metadata = self.extract_metadata(&content)?;
 
-    // Parse configuration from context
-    let config: ProcessorConfig = context
-        .and_then(|ctx| serde_json::from_value(ctx.clone()).ok())
-        .unwrap_or_default();
+        // Parse configuration from context
+        let config: ProcessorConfig = context
+            .and_then(|ctx| serde_json::from_value(ctx.clone()).ok())
+            .unwrap_or_default();
 
-    // Parse Markdown to HTML
-    let parser = Parser::new_ext(&content, self.options);
-    let mut html_output = String::with_capacity(content.len() * 2);
-    html::push_html(&mut html_output, parser);
+        // Parse Markdown to HTML
+        let parser = Parser::new_ext(&content, self.options);
+        let mut html_output = String::with_capacity(content.len() * 2);
+        html::push_html(&mut html_output, parser);
 
-    // Generate and prepend TOC if enabled
-    if config.toc {
-        let toc = self.generate_toc(&content)?;
-        println!("Generated ToC: {}", toc);  // Debugging line
-        html_output = format!("{}\n{}", toc, html_output);
+        // Generate and prepend TOC if enabled
+        if config.toc {
+            let toc = self.generate_toc(&content)?;
+            println!("Generated ToC: {}", toc); // Debugging line
+            html_output = format!("{}\n{}", toc, html_output);
+        }
+
+        // Sanitize if enabled
+        let processed = if config.sanitize {
+            self.sanitize_html(&html_output)?
+        } else {
+            html_output
+        };
+
+        // Add metadata as JSON-LD if present
+        if !metadata.custom.is_empty() {
+            let json_ld = serde_json::to_string(&metadata.custom)
+                .map_err(|e| ProcessingError::ContentProcessing {
+                    details: "Failed to serialize metadata".to_string(),
+                    source: Some(Box::new(e)),
+                })?;
+            Ok(format!(
+                "{}\n<script type=\"application/ld+json\">{}</script>",
+                processed, json_ld
+            ))
+        } else {
+            Ok(processed)
+        }
     }
-
-    // Sanitize if enabled
-    let processed = if config.sanitize {
-        self.sanitize_html(&html_output)?
-    } else {
-        html_output
-    };
-
-    // Add metadata as JSON-LD if present
-    if !metadata.custom.is_empty() {
-        let json_ld = serde_json::to_string(&metadata.custom)
-            .map_err(|e| ProcessingError::ContentProcessing {
-                details: "Failed to serialize metadata".to_string(),
-                source: Some(Box::new(e)),
-            })?;
-        Ok(format!(
-            "{}\n<script type=\"application/ld+json\">{}</script>",
-            processed, json_ld
-        ))
-    } else {
-        Ok(processed)
-    }
-}
 }
 
 // Helper functions for default values
@@ -582,19 +600,21 @@ custom_field: value
     }
 
     #[test]
-fn test_toc_generation() {
-    let processor = MarkdownProcessor::new();
-    let input = "# H1\n\n## H2\n\n### H3";
-    let context = json!({
-        "toc": true
-    });
+    fn test_toc_generation() {
+        let processor = MarkdownProcessor::new();
+        let input = "# H1\n\n## H2\n\n### H3";
+        let context = json!({
+            "toc": true
+        });
 
-    let result = processor.process(input.to_owned(), Some(&context)).unwrap();
-    println!("Result: {}", result);  // Debugging line
+        let result = processor
+            .process(input.to_owned(), Some(&context))
+            .unwrap();
+        println!("Result: {}", result); // Debugging line
 
-    assert!(result.contains(r#"<nav class="toc""#));
-    assert!(result.contains("<ul>"));
-}
+        assert!(result.contains(r#"<nav class="toc""#));
+        assert!(result.contains("<ul>"));
+    }
 
     #[test]
     fn test_sanitization() {
@@ -604,7 +624,9 @@ fn test_toc_generation() {
             "sanitize": true
         });
 
-        let result = processor.process(input.to_owned(), Some(&context)).unwrap();
+        let result = processor
+            .process(input.to_owned(), Some(&context))
+            .unwrap();
         assert!(!result.contains("<script>"));
     }
 
@@ -620,9 +642,7 @@ fn test_toc_generation() {
         assert!(processor.validate(&large_content).is_err());
 
         // Test suspicious patterns
-        assert!(processor
-            .validate("javascript:alert(1)")
-            .is_err());
+        assert!(processor.validate("javascript:alert(1)").is_err());
         assert!(processor.validate("onclick='alert(1)'").is_err());
 
         // Test valid content
