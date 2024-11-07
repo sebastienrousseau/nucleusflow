@@ -109,13 +109,21 @@ mod tests {
     }
 
     #[test]
-    fn test_write_content() {
-        let result = write_content("test_output.txt", "Sample content");
-        assert!(
-            result.is_ok()
-                || matches!(result, Err(ProcessError::WriteError(_)))
-        );
+fn test_write_content() {
+    let file_path = "test_output.txt";
+
+    // Run the test
+    let result = write_content(file_path, "Sample content");
+    assert!(
+        result.is_ok() || matches!(result, Err(ProcessError::WriteError(_)))
+    );
+
+    // Cleanup: remove the test file if it was created
+    if Path::new(file_path).exists() {
+        std::fs::remove_file(file_path).expect("Failed to delete test output file");
     }
+}
+
 
     #[test]
     fn test_process_content() {
