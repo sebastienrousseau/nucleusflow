@@ -5,7 +5,7 @@ alt="NucleusFlow logo" height="66" align="right" />
 
 # `NucleusFlow`
 
-A fast and flexible static site generator CLI written in Rust.
+A fast, flexible and secure static site generator written in Rust.
 
 <!-- markdownlint-disable MD033 MD041 -->
 <center>
@@ -21,17 +21,33 @@ A fast and flexible static site generator CLI written in Rust.
 
 ## Overview
 
-`nucleusflow` is a powerful and flexible command-line interface (CLI) for a static site generator written in Rust. It provides a user-friendly way to create, manage, and deploy static websites, offering advanced features for content processing, templating, and output generation.
+NucleusFlow is a powerful content processing library and static site generator that prioritises security, performance and flexibility. Built in Rust, it offers a comprehensive toolkit for managing content lifecycles, from processing raw content to generating optimised static websites.
 
 ## Features
 
-- **Project Creation:** Easily create new static site projects with predefined structures.
-- **Content Management:** Efficiently manage your content, templates, and static assets.
-- **Flexible Build Process:** Compile your static site with customizable options.
-- **Development Server:** Run a local development server for real-time preview.
-- **Advanced Templating:** Powerful templating system for flexible content rendering.
-- **Multiple Output Formats:** Generate output in various formats to suit your needs.
-- **Extensible Architecture:** Modular design allows for easy extension and customization.
+- **Secure Content Processing**
+  - Robust input validation and sanitisation
+  - Path traversal protection
+  - Memory-safe operations
+  - Secure defaults for all operations
+
+- **Flexible Content Pipeline**
+  - Markdown processing with frontmatter support
+  - Template rendering with Handlebars
+  - HTML generation with minification
+  - Asset management and optimisation
+
+- **Performance Optimised**
+  - Parallel processing capabilities
+  - Efficient memory usage
+  - Content caching
+  - Minimal dependencies
+
+- **Developer Experience**
+  - Intuitive CLI interface
+  - Rich error messages
+  - Extensive documentation
+  - Type-safe configurations
 
 ## Installation
 
@@ -74,6 +90,16 @@ let nucleus = NucleusFlow::new(
 nucleus.process().expect("Failed to process content");
 ```
 
+### CLI Usage
+
+```bash
+# Create a new site
+nucleusflow new my-site --template blog
+
+# Build the site
+nucleusflow build --content content/ --output public/
+
+```
 
 This example demonstrates setting up NucleusFlow with a Markdown processor, Handlebars templating, and HTML output generation.
 

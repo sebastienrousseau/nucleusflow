@@ -5,7 +5,7 @@ alt="NucleusFlow logo" height="66" align="right" />
 
 # `NucleusFlow`
 
-A powerful Rust library for seamless internationalization and localization.
+A fast, flexible and secure static site generator written in Rust.
 
 <!-- markdownlint-disable MD033 MD041 -->
 <center>
@@ -21,16 +21,33 @@ A powerful Rust library for seamless internationalization and localization.
 
 ## Overview
 
-`nucleusflow` is a robust Rust library that provides efficient internationalization and localization capabilities. Designed for applications requiring multi-language support, it offers fast language detection, fluid translations, and intuitive multilingual content management.
+NucleusFlow is a powerful content processing library and static site generator that prioritises security, performance and flexibility. Built in Rust, it offers a comprehensive toolkit for managing content lifecycles, from processing raw content to generating optimised static websites.
 
 ## Features
 
-- **Instant Language Detection:** Quickly identify the language of input text.
-- **Efficient Translation:** Translate text between multiple languages.
-- **Flexible Content Management:** Easily manage and retrieve localized content.
-- **Performance Optimized:** Utilizes efficient algorithms for fast processing.
-- **Comprehensive Language Support:** Handles a wide range of languages, including non-Latin scripts.
-- **Error Handling:** Robust error management for reliable operation.
+- **Secure Content Processing**
+  - Robust input validation and sanitisation
+  - Path traversal protection
+  - Memory-safe operations
+  - Secure defaults for all operations
+
+- **Flexible Content Pipeline**
+  - Markdown processing with frontmatter support
+  - Template rendering with Handlebars
+  - HTML generation with minification
+  - Asset management and optimisation
+
+- **Performance Optimised**
+  - Parallel processing capabilities
+  - Efficient memory usage
+  - Content caching
+  - Minimal dependencies
+
+- **Developer Experience**
+  - Intuitive CLI interface
+  - Rich error messages
+  - Extensive documentation
+  - Type-safe configurations
 
 [00]: https://nucleusflow.com
 [01]: https://lib.rs/crates/nucleusflow
@@ -44,7 +61,7 @@ A powerful Rust library for seamless internationalization and localization.
 [09]: https://github.com/sebastienrousseau/nucleusflow
 
 [build-badge]: https://img.shields.io/github/actions/workflow/status/sebastienrousseau/nucleusflow/release.yml?branch=main&style=for-the-badge&logo=github
-[codecov-badge]: https://img.shields.io/codecov/c/github/sebastienrousseau/nucleusflow?style=for-the-badge&token=CfYfWg8UHf&logo=codecov
+[codecov-badge]: https://img.shields.io/codecov/c/github/sebastienrousseau/nucleusflow?style=for-the-badge&token=psbZ8MASWj&logo=codecov
 [crates-badge]: https://img.shields.io/crates/v/nucleusflow.svg?style=for-the-badge&color=fc8d62&logo=rust
 [docs-badge]: https://img.shields.io/badge/docs.rs-nucleusflow-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs
 [github-badge]: https://img.shields.io/badge/github-sebastienrousseau/nucleusflow-8da0cb?style=for-the-badge&labelColor=555555&logo=github

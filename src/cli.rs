@@ -107,25 +107,6 @@ pub fn build() -> Command {
                         .action(ArgAction::SetTrue)
                 )
         )
-        .subcommand(
-            Command::new("serve")
-                .about("Start development server")
-                .arg(
-                    Arg::new("port")
-                        .short('p')
-                        .long("port")
-                        .help("Port to serve on")
-                        .value_parser(value_parser!(u16))
-                        .default_value(DEFAULT_PORT.to_string())
-                )
-                .arg(
-                    Arg::new("watch")
-                        .short('w')
-                        .long("watch")
-                        .help("Watch for changes")
-                        .action(ArgAction::SetTrue)
-                )
-        )
         .after_help(
             "\x1b[1;4mDocumentation:\x1b[0m\n\n  https://nucleusflow.com\n\n\
              \x1b[1;4mLicense:\x1b[0m\n  The project is licensed under the terms of \
@@ -158,11 +139,6 @@ pub fn execute() -> Result<()> {
                 sub_matches.get_one::<PathBuf>("template").unwrap();
             let minify = sub_matches.get_flag("minify");
             build_site(content_dir, output_dir, template_dir, minify)
-        }
-        Some(("serve", sub_matches)) => {
-            let port = *sub_matches.get_one::<u16>("port").unwrap();
-            let watch = sub_matches.get_flag("watch");
-            serve_site(port, watch)
         }
         _ => Err(ProcessingError::internal_error("Unknown command")),
     }
@@ -234,16 +210,6 @@ fn minify_content(content: &str) -> String {
     content.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
-/// Starts the development server on the specified port.
-fn serve_site(port: u16, watch: bool) -> Result<()> {
-    info!(
-        "Starting development server on port {} with watch mode: {}",
-        port, watch
-    );
-
-    Ok(())
-}
-
 /// Displays the NucleusFlow banner with version and description information.
 pub fn print_banner() {
     info!("Displaying NucleusFlow banner");
@@ -309,20 +275,5 @@ mod tests {
             PathBuf::from("content").as_path()
         );
         assert!(build_cmd.get_flag("minify"));
-    }
-
-    #[test]
-    fn test_serve_command() {
-        let matches = get_matches(vec![
-            "nucleusflow",
-            "serve",
-            "--port",
-            "8080",
-            "--watch",
-        ]);
-        let serve_cmd = matches.subcommand_matches("serve").unwrap();
-
-        assert_eq!(serve_cmd.get_one::<u16>("port").unwrap(), &8080);
-        assert!(serve_cmd.get_flag("watch"));
     }
 }
