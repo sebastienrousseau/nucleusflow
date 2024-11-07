@@ -19,7 +19,8 @@
 #![crate_name = "nucleusflow"]
 #![crate_type = "lib"]
 
-use crate::core::error::{NucleusFlowError, Result};
+use crate::core::error::{ProcessingError, Result};
+use crate::core::traits::Generator;
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -30,19 +31,21 @@ pub mod core {
     pub mod config;
     /// Contains error types and handling for NucleusFlow.
     pub mod error;
+    /// Defines common traits for content processing, rendering, and generation.
+    pub mod traits;
 }
 
 /// Provides command-line interface utilities.
 pub mod cli;
-
-/// Provides content processing utilities.
-pub mod content;
 
 /// Provides output generation utilities.
 pub mod generators;
 
 /// Provides processing pipeline utilities.
 pub mod process;
+
+/// Provides processors for content transformation.
+pub mod processors;
 
 /// Provides template rendering utilities.
 pub mod template;
@@ -106,41 +109,6 @@ pub trait TemplateRenderer: Send + Sync + std::fmt::Debug {
         &self,
         template: &str,
         context: &serde_json::Value,
-    ) -> Result<()>;
-}
-
-/// Trait for output generation implementations.
-///
-/// Defines methods for generating output files.
-pub trait OutputGenerator: Send + Sync + std::fmt::Debug {
-    /// Generates output from the given content to the specified path.
-    ///
-    /// # Arguments
-    /// * `content` - The content to be output.
-    /// * `path` - The output file path.
-    /// * `options` - Optional settings for generation.
-    ///
-    /// # Returns
-    /// * `Result<()>` - Indicates success, or an error if generation fails.
-    fn generate(
-        &self,
-        content: &str,
-        path: &Path,
-        options: Option<&serde_json::Value>,
-    ) -> Result<()>;
-
-    /// Validates the path and options for output generation.
-    ///
-    /// # Arguments
-    /// * `path` - The output file path.
-    /// * `options` - Optional settings for generation.
-    ///
-    /// # Returns
-    /// * `Result<()>` - Indicates success if valid, or an error otherwise.
-    fn validate(
-        &self,
-        path: &Path,
-        options: Option<&serde_json::Value>,
     ) -> Result<()>;
 }
 
@@ -209,7 +177,7 @@ impl TemplateRenderer for HtmlTemplateRenderer {
     }
 }
 
-/// Concrete implementation of `OutputGenerator` for generating HTML files.
+/// Concrete implementation of `Generator` for generating HTML files.
 #[derive(Debug)]
 pub struct HtmlOutputGenerator {
     /// The base path for output files.
@@ -223,7 +191,7 @@ impl HtmlOutputGenerator {
     }
 }
 
-impl OutputGenerator for HtmlOutputGenerator {
+impl Generator for HtmlOutputGenerator {
     fn generate(
         &self,
         content: &str,
@@ -232,7 +200,7 @@ impl OutputGenerator for HtmlOutputGenerator {
     ) -> Result<()> {
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent).map_err(|e| {
-                NucleusFlowError::io_error(parent.to_path_buf(), e)
+                ProcessingError::io_error(parent.to_path_buf(), e)
             })?;
         }
         let mut file = fs::File::create(path)?;
@@ -248,7 +216,7 @@ impl OutputGenerator for HtmlOutputGenerator {
         if let Some(parent) = path.parent() {
             if !parent.exists() {
                 fs::create_dir_all(parent).map_err(|e| {
-                    NucleusFlowError::io_error(parent.to_path_buf(), e)
+                    ProcessingError::io_error(parent.to_path_buf(), e)
                 })?;
             }
         }
@@ -280,18 +248,20 @@ impl NucleusFlowConfig {
 
         for dir in [&content_dir, &template_dir] {
             if !dir.exists() || !dir.is_dir() {
-                return Err(NucleusFlowError::config_error(
+                return Err(ProcessingError::configuration(
                     "Invalid directory",
                     Some(dir.clone()),
+                    None,
                 ));
             }
         }
 
         if !output_dir.exists() {
             fs::create_dir_all(&output_dir).map_err(|e| {
-                NucleusFlowError::config_error(
+                ProcessingError::configuration(
                     format!("Failed to create output directory: {}", e),
                     Some(output_dir.clone()),
+                    None,
                 )
             })?;
         }
@@ -310,7 +280,7 @@ pub struct NucleusFlow {
     config: NucleusFlowConfig,
     content_processor: Box<dyn ContentProcessor>,
     template_renderer: Box<dyn TemplateRenderer>,
-    output_generator: Box<dyn OutputGenerator>,
+    output_generator: Box<dyn Generator>,
 }
 
 impl NucleusFlow {
@@ -319,7 +289,7 @@ impl NucleusFlow {
         config: NucleusFlowConfig,
         content_processor: Box<dyn ContentProcessor>,
         template_renderer: Box<dyn TemplateRenderer>,
-        output_generator: Box<dyn OutputGenerator>,
+        output_generator: Box<dyn Generator>,
     ) -> Self {
         Self {
             config,
@@ -362,8 +332,8 @@ impl NucleusFlow {
 
         let relative_path = path
             .strip_prefix(&self.config.content_dir)
-            .map_err(|e| NucleusFlowError::ContentProcessingError {
-                message: format!(
+            .map_err(|e| ProcessingError::ContentProcessing {
+                details: format!(
                     "Failed to determine relative path: {}",
                     e
                 ),

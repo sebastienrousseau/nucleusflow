@@ -64,6 +64,7 @@ path = "src/main.rs"                        # Path to the binary entry point
 # Optional features that can be enabled or disabled.
 default = []                                # No default features enabled
 async = []                                  # Placeholder for future asynchronous feature support
+cli = []                                    # Enable command-line interface support
 
 # -----------------------------------------------------------------------------
 # Build Dependencies
@@ -90,20 +91,19 @@ predicates = "3.1.2"                          # Predicate testing library
 anyhow = "1.0"
 clap = "4.5"
 env_logger = "0.11"
-handlebars = "6.1"
-html5ever = "0.29.0"
+handlebars = "6.2"
+html5ever = "0.29"
 log = "0.4"
-markup5ever_rcdom = "0.5.0-unofficial"
 minify-html = "0.15.0"
-parking_lot = "0.12.3"
+parking_lot = "0.12"
 pulldown-cmark = "0.12"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yml = "0.0.12"
 staticdatagen = "0.0.1"
-tempfile = "3.13.0"
-thiserror = "1.0"
-toml = "0.8.19"
+tempfile = "3.13"
+thiserror = "2.0"
+toml = "0.8"
 
 # -----------------------------------------------------------------------------
 # Criterion Benchmark

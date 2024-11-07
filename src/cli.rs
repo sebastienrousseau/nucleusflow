@@ -26,7 +26,7 @@
 //! assert_eq!(new_cmd.get_one::<String>("template").unwrap(), "blog");
 //! ```
 
-use crate::core::error::{NucleusFlowError, Result};
+use crate::core::error::{ProcessingError, Result};
 use clap::{value_parser, Arg, ArgAction, Command};
 use log::{debug, info};
 use std::fs;
@@ -107,25 +107,6 @@ pub fn build() -> Command {
                         .action(ArgAction::SetTrue)
                 )
         )
-        .subcommand(
-            Command::new("serve")
-                .about("Start development server")
-                .arg(
-                    Arg::new("port")
-                        .short('p')
-                        .long("port")
-                        .help("Port to serve on")
-                        .value_parser(value_parser!(u16))
-                        .default_value(DEFAULT_PORT.to_string())
-                )
-                .arg(
-                    Arg::new("watch")
-                        .short('w')
-                        .long("watch")
-                        .help("Watch for changes")
-                        .action(ArgAction::SetTrue)
-                )
-        )
         .after_help(
             "\x1b[1;4mDocumentation:\x1b[0m\n\n  https://nucleusflow.com\n\n\
              \x1b[1;4mLicense:\x1b[0m\n  The project is licensed under the terms of \
@@ -159,12 +140,7 @@ pub fn execute() -> Result<()> {
             let minify = sub_matches.get_flag("minify");
             build_site(content_dir, output_dir, template_dir, minify)
         }
-        Some(("serve", sub_matches)) => {
-            let port = *sub_matches.get_one::<u16>("port").unwrap();
-            let watch = sub_matches.get_flag("watch");
-            serve_site(port, watch)
-        }
-        _ => Err(NucleusFlowError::internal_error("Unknown command")),
+        _ => Err(ProcessingError::internal_error("Unknown command")),
     }
 }
 
@@ -176,8 +152,9 @@ fn create_new_project(name: &str, template: &str) -> Result<()> {
     );
 
     if name.is_empty() {
-        return Err(NucleusFlowError::config_error(
+        return Err(ProcessingError::configuration(
             "Project name cannot be empty",
+            None,
             None,
         ));
     }
@@ -198,9 +175,10 @@ fn build_site(
     );
 
     if !content_dir.exists() {
-        return Err(NucleusFlowError::config_error(
+        return Err(ProcessingError::configuration(
             "Content directory does not exist",
             Some(content_dir.clone()),
+            None,
         ));
     }
 
@@ -230,16 +208,6 @@ fn build_site(
 fn minify_content(content: &str) -> String {
     // Placeholder minification: replace multiple spaces with a single space.
     content.split_whitespace().collect::<Vec<_>>().join(" ")
-}
-
-/// Starts the development server on the specified port.
-fn serve_site(port: u16, watch: bool) -> Result<()> {
-    info!(
-        "Starting development server on port {} with watch mode: {}",
-        port, watch
-    );
-
-    Ok(())
 }
 
 /// Displays the NucleusFlow banner with version and description information.
@@ -307,20 +275,5 @@ mod tests {
             PathBuf::from("content").as_path()
         );
         assert!(build_cmd.get_flag("minify"));
-    }
-
-    #[test]
-    fn test_serve_command() {
-        let matches = get_matches(vec![
-            "nucleusflow",
-            "serve",
-            "--port",
-            "8080",
-            "--watch",
-        ]);
-        let serve_cmd = matches.subcommand_matches("serve").unwrap();
-
-        assert_eq!(serve_cmd.get_one::<u16>("port").unwrap(), &8080);
-        assert!(serve_cmd.get_flag("watch"));
     }
 }
