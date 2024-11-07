@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["cli","content","core","generators","process","template"],"struct":["FileContentProcessor","HtmlOutputGenerator","HtmlTemplateRenderer","NucleusFlow","NucleusFlowConfig"],"trait":["ContentProcessor","OutputGenerator","TemplateRenderer"]};
+window.SIDEBAR_ITEMS = {"mod":["cli","core","generators","process","processors","template"],"struct":["FileContentProcessor","HtmlOutputGenerator","HtmlTemplateRenderer","NucleusFlow","NucleusFlowConfig"],"trait":["ContentProcessor","TemplateRenderer"]};

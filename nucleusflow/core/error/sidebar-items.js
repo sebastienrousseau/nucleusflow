@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["NucleusFlowError"],"type":["Result"]};
+window.SIDEBAR_ITEMS = {"enum":["ProcessingError"],"type":["Result"]};

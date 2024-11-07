@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/lib.rs`."><title>lib.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-590a400c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="nucleusflow" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.0-nightly (b3f75cc87 2024-11-02)" data-channel="nightly" data-search-js="search-c5a66128.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="../../static.files/src-script-56102188.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://kura.pro/nucleusflow/images/favicon.ico"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">nucleusflow/</div>lib.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/lib.rs`."><title>lib.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-590a400c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="nucleusflow" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.0-nightly (854980293 2024-11-06)" data-channel="nightly" data-search-js="search-c5a66128.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="../../static.files/src-script-56102188.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://kura.pro/nucleusflow/images/favicon.ico"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">nucleusflow/</div>lib.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
 <a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
@@ -420,37 +420,7 @@
 <a href="#419" id="419">419</a>
 <a href="#420" id="420">420</a>
 <a href="#421" id="421">421</a>
-<a href="#422" id="422">422</a>
-<a href="#423" id="423">423</a>
-<a href="#424" id="424">424</a>
-<a href="#425" id="425">425</a>
-<a href="#426" id="426">426</a>
-<a href="#427" id="427">427</a>
-<a href="#428" id="428">428</a>
-<a href="#429" id="429">429</a>
-<a href="#430" id="430">430</a>
-<a href="#431" id="431">431</a>
-<a href="#432" id="432">432</a>
-<a href="#433" id="433">433</a>
-<a href="#434" id="434">434</a>
-<a href="#435" id="435">435</a>
-<a href="#436" id="436">436</a>
-<a href="#437" id="437">437</a>
-<a href="#438" id="438">438</a>
-<a href="#439" id="439">439</a>
-<a href="#440" id="440">440</a>
-<a href="#441" id="441">441</a>
-<a href="#442" id="442">442</a>
-<a href="#443" id="443">443</a>
-<a href="#444" id="444">444</a>
-<a href="#445" id="445">445</a>
-<a href="#446" id="446">446</a>
-<a href="#447" id="447">447</a>
-<a href="#448" id="448">448</a>
-<a href="#449" id="449">449</a>
-<a href="#450" id="450">450</a>
-<a href="#451" id="451">451</a>
-<a href="#452" id="452">452</a></pre></div><pre class="rust"><code><span class="comment">// Copyright © 2024 NucleusFlow. All rights reserved.
+<a href="#422" id="422">422</a></pre></div><pre class="rust"><code><span class="comment">// Copyright © 2024 NucleusFlow. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 </span><span class="doccomment">//! # NucleusFlow Library
@@ -471,7 +441,8 @@
 #![crate_name = <span class="string">"nucleusflow"</span>]
 #![crate_type = <span class="string">"lib"</span>]
 
-</span><span class="kw">use </span><span class="kw">crate</span>::core::error::{NucleusFlowError, <span class="prelude-ty">Result</span>};
+</span><span class="kw">use </span><span class="kw">crate</span>::core::error::{ProcessingError, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span><span class="kw">crate</span>::core::traits::Generator;
 <span class="kw">use </span>std::fs;
 <span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::path::{Path, PathBuf};
@@ -482,19 +453,21 @@
     </span><span class="kw">pub mod </span>config;
     <span class="doccomment">/// Contains error types and handling for NucleusFlow.
     </span><span class="kw">pub mod </span>error;
+    <span class="doccomment">/// Defines common traits for content processing, rendering, and generation.
+    </span><span class="kw">pub mod </span>traits;
 }
 
 <span class="doccomment">/// Provides command-line interface utilities.
 </span><span class="kw">pub mod </span>cli;
-
-<span class="doccomment">/// Provides content processing utilities.
-</span><span class="kw">pub mod </span>content;
 
 <span class="doccomment">/// Provides output generation utilities.
 </span><span class="kw">pub mod </span>generators;
 
 <span class="doccomment">/// Provides processing pipeline utilities.
 </span><span class="kw">pub mod </span>process;
+
+<span class="doccomment">/// Provides processors for content transformation.
+</span><span class="kw">pub mod </span>processors;
 
 <span class="doccomment">/// Provides template rendering utilities.
 </span><span class="kw">pub mod </span>template;
@@ -558,41 +531,6 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         template: <span class="kw-2">&amp;</span>str,
         context: <span class="kw-2">&amp;</span>serde_json::Value,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;;
-}
-
-<span class="doccomment">/// Trait for output generation implementations.
-///
-/// Defines methods for generating output files.
-</span><span class="kw">pub trait </span>OutputGenerator: Send + Sync + std::fmt::Debug {
-    <span class="doccomment">/// Generates output from the given content to the specified path.
-    ///
-    /// # Arguments
-    /// * `content` - The content to be output.
-    /// * `path` - The output file path.
-    /// * `options` - Optional settings for generation.
-    ///
-    /// # Returns
-    /// * `Result&lt;()&gt;` - Indicates success, or an error if generation fails.
-    </span><span class="kw">fn </span>generate(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        content: <span class="kw-2">&amp;</span>str,
-        path: <span class="kw-2">&amp;</span>Path,
-        options: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>serde_json::Value&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;;
-
-    <span class="doccomment">/// Validates the path and options for output generation.
-    ///
-    /// # Arguments
-    /// * `path` - The output file path.
-    /// * `options` - Optional settings for generation.
-    ///
-    /// # Returns
-    /// * `Result&lt;()&gt;` - Indicates success if valid, or an error otherwise.
-    </span><span class="kw">fn </span>validate(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        path: <span class="kw-2">&amp;</span>Path,
-        options: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>serde_json::Value&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;;
 }
 
@@ -661,7 +599,7 @@
     }
 }
 
-<span class="doccomment">/// Concrete implementation of `OutputGenerator` for generating HTML files.
+<span class="doccomment">/// Concrete implementation of `Generator` for generating HTML files.
 </span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>HtmlOutputGenerator {
     <span class="doccomment">/// The base path for output files.
@@ -675,7 +613,7 @@
     }
 }
 
-<span class="kw">impl </span>OutputGenerator <span class="kw">for </span>HtmlOutputGenerator {
+<span class="kw">impl </span>Generator <span class="kw">for </span>HtmlOutputGenerator {
     <span class="kw">fn </span>generate(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         content: <span class="kw-2">&amp;</span>str,
@@ -684,7 +622,7 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(parent) = path.parent() {
             fs::create_dir_all(parent).map_err(|e| {
-                NucleusFlowError::io_error(parent.to_path_buf(), e)
+                ProcessingError::io_error(parent.to_path_buf(), e)
             })<span class="question-mark">?</span>;
         }
         <span class="kw">let </span><span class="kw-2">mut </span>file = fs::File::create(path)<span class="question-mark">?</span>;
@@ -700,7 +638,7 @@
         <span class="kw">if let </span><span class="prelude-val">Some</span>(parent) = path.parent() {
             <span class="kw">if </span>!parent.exists() {
                 fs::create_dir_all(parent).map_err(|e| {
-                    NucleusFlowError::io_error(parent.to_path_buf(), e)
+                    ProcessingError::io_error(parent.to_path_buf(), e)
                 })<span class="question-mark">?</span>;
             }
         }
@@ -732,18 +670,20 @@
 
         <span class="kw">for </span>dir <span class="kw">in </span>[<span class="kw-2">&amp;</span>content_dir, <span class="kw-2">&amp;</span>template_dir] {
             <span class="kw">if </span>!dir.exists() || !dir.is_dir() {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(NucleusFlowError::config_error(
+                <span class="kw">return </span><span class="prelude-val">Err</span>(ProcessingError::configuration(
                     <span class="string">"Invalid directory"</span>,
                     <span class="prelude-val">Some</span>(dir.clone()),
+                    <span class="prelude-val">None</span>,
                 ));
             }
         }
 
         <span class="kw">if </span>!output_dir.exists() {
             fs::create_dir_all(<span class="kw-2">&amp;</span>output_dir).map_err(|e| {
-                NucleusFlowError::config_error(
+                ProcessingError::configuration(
                     <span class="macro">format!</span>(<span class="string">"Failed to create output directory: {}"</span>, e),
                     <span class="prelude-val">Some</span>(output_dir.clone()),
+                    <span class="prelude-val">None</span>,
                 )
             })<span class="question-mark">?</span>;
         }
@@ -762,7 +702,7 @@
     config: NucleusFlowConfig,
     content_processor: Box&lt;<span class="kw">dyn </span>ContentProcessor&gt;,
     template_renderer: Box&lt;<span class="kw">dyn </span>TemplateRenderer&gt;,
-    output_generator: Box&lt;<span class="kw">dyn </span>OutputGenerator&gt;,
+    output_generator: Box&lt;<span class="kw">dyn </span>Generator&gt;,
 }
 
 <span class="kw">impl </span>NucleusFlow {
@@ -771,7 +711,7 @@
         config: NucleusFlowConfig,
         content_processor: Box&lt;<span class="kw">dyn </span>ContentProcessor&gt;,
         template_renderer: Box&lt;<span class="kw">dyn </span>TemplateRenderer&gt;,
-        output_generator: Box&lt;<span class="kw">dyn </span>OutputGenerator&gt;,
+        output_generator: Box&lt;<span class="kw">dyn </span>Generator&gt;,
     ) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             config,
@@ -814,8 +754,8 @@
 
         <span class="kw">let </span>relative_path = path
             .strip_prefix(<span class="kw-2">&amp;</span><span class="self">self</span>.config.content_dir)
-            .map_err(|e| NucleusFlowError::ContentProcessingError {
-                message: <span class="macro">format!</span>(
+            .map_err(|e| ProcessingError::ContentProcessing {
+                details: <span class="macro">format!</span>(
                     <span class="string">"Failed to determine relative path: {}"</span>,
                     e
                 ),

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/cli.rs`."><title>cli.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-590a400c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="nucleusflow" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.0-nightly (b3f75cc87 2024-11-02)" data-channel="nightly" data-search-js="search-c5a66128.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="../../static.files/src-script-56102188.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://kura.pro/nucleusflow/images/favicon.ico"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">nucleusflow/</div>cli.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/cli.rs`."><title>cli.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-590a400c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="nucleusflow" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.0-nightly (854980293 2024-11-06)" data-channel="nightly" data-search-js="search-c5a66128.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="../../static.files/src-script-56102188.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://kura.pro/nucleusflow/images/favicon.ico"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">nucleusflow/</div>cli.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
 <a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
@@ -277,54 +277,7 @@
 <a href="#276" id="276">276</a>
 <a href="#277" id="277">277</a>
 <a href="#278" id="278">278</a>
-<a href="#279" id="279">279</a>
-<a href="#280" id="280">280</a>
-<a href="#281" id="281">281</a>
-<a href="#282" id="282">282</a>
-<a href="#283" id="283">283</a>
-<a href="#284" id="284">284</a>
-<a href="#285" id="285">285</a>
-<a href="#286" id="286">286</a>
-<a href="#287" id="287">287</a>
-<a href="#288" id="288">288</a>
-<a href="#289" id="289">289</a>
-<a href="#290" id="290">290</a>
-<a href="#291" id="291">291</a>
-<a href="#292" id="292">292</a>
-<a href="#293" id="293">293</a>
-<a href="#294" id="294">294</a>
-<a href="#295" id="295">295</a>
-<a href="#296" id="296">296</a>
-<a href="#297" id="297">297</a>
-<a href="#298" id="298">298</a>
-<a href="#299" id="299">299</a>
-<a href="#300" id="300">300</a>
-<a href="#301" id="301">301</a>
-<a href="#302" id="302">302</a>
-<a href="#303" id="303">303</a>
-<a href="#304" id="304">304</a>
-<a href="#305" id="305">305</a>
-<a href="#306" id="306">306</a>
-<a href="#307" id="307">307</a>
-<a href="#308" id="308">308</a>
-<a href="#309" id="309">309</a>
-<a href="#310" id="310">310</a>
-<a href="#311" id="311">311</a>
-<a href="#312" id="312">312</a>
-<a href="#313" id="313">313</a>
-<a href="#314" id="314">314</a>
-<a href="#315" id="315">315</a>
-<a href="#316" id="316">316</a>
-<a href="#317" id="317">317</a>
-<a href="#318" id="318">318</a>
-<a href="#319" id="319">319</a>
-<a href="#320" id="320">320</a>
-<a href="#321" id="321">321</a>
-<a href="#322" id="322">322</a>
-<a href="#323" id="323">323</a>
-<a href="#324" id="324">324</a>
-<a href="#325" id="325">325</a>
-<a href="#326" id="326">326</a></pre></div><pre class="rust"><code><span class="comment">// Copyright © 2024 NucleusFlow. All rights reserved.
+<a href="#279" id="279">279</a></pre></div><pre class="rust"><code><span class="comment">// Copyright © 2024 NucleusFlow. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 </span><span class="doccomment">//! Command-line interface for NucleusFlow
@@ -352,7 +305,7 @@
 //! assert_eq!(new_cmd.get_one::&lt;String&gt;("template").unwrap(), "blog");
 //! ```
 
-</span><span class="kw">use </span><span class="kw">crate</span>::core::error::{NucleusFlowError, <span class="prelude-ty">Result</span>};
+</span><span class="kw">use </span><span class="kw">crate</span>::core::error::{ProcessingError, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>clap::{value_parser, Arg, ArgAction, Command};
 <span class="kw">use </span>log::{debug, info};
 <span class="kw">use </span>std::fs;
@@ -433,25 +386,6 @@
                         .action(ArgAction::SetTrue)
                 )
         )
-        .subcommand(
-            Command::new(<span class="string">"serve"</span>)
-                .about(<span class="string">"Start development server"</span>)
-                .arg(
-                    Arg::new(<span class="string">"port"</span>)
-                        .short(<span class="string">'p'</span>)
-                        .long(<span class="string">"port"</span>)
-                        .help(<span class="string">"Port to serve on"</span>)
-                        .value_parser(<span class="macro">value_parser!</span>(u16))
-                        .default_value(DEFAULT_PORT.to_string())
-                )
-                .arg(
-                    Arg::new(<span class="string">"watch"</span>)
-                        .short(<span class="string">'w'</span>)
-                        .long(<span class="string">"watch"</span>)
-                        .help(<span class="string">"Watch for changes"</span>)
-                        .action(ArgAction::SetTrue)
-                )
-        )
         .after_help(
             <span class="string">"\x1b[1;4mDocumentation:\x1b[0m\n\n  https://nucleusflow.com\n\n\
              \x1b[1;4mLicense:\x1b[0m\n  The project is licensed under the terms of \
@@ -485,12 +419,7 @@
             <span class="kw">let </span>minify = sub_matches.get_flag(<span class="string">"minify"</span>);
             build_site(content_dir, output_dir, template_dir, minify)
         }
-        <span class="prelude-val">Some</span>((<span class="string">"serve"</span>, sub_matches)) =&gt; {
-            <span class="kw">let </span>port = <span class="kw-2">*</span>sub_matches.get_one::&lt;u16&gt;(<span class="string">"port"</span>).unwrap();
-            <span class="kw">let </span>watch = sub_matches.get_flag(<span class="string">"watch"</span>);
-            serve_site(port, watch)
-        }
-        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(NucleusFlowError::internal_error(<span class="string">"Unknown command"</span>)),
+        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(ProcessingError::internal_error(<span class="string">"Unknown command"</span>)),
     }
 }
 
@@ -502,8 +431,9 @@
     );
 
     <span class="kw">if </span>name.is_empty() {
-        <span class="kw">return </span><span class="prelude-val">Err</span>(NucleusFlowError::config_error(
+        <span class="kw">return </span><span class="prelude-val">Err</span>(ProcessingError::configuration(
             <span class="string">"Project name cannot be empty"</span>,
+            <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         ));
     }
@@ -524,9 +454,10 @@
     );
 
     <span class="kw">if </span>!content_dir.exists() {
-        <span class="kw">return </span><span class="prelude-val">Err</span>(NucleusFlowError::config_error(
+        <span class="kw">return </span><span class="prelude-val">Err</span>(ProcessingError::configuration(
             <span class="string">"Content directory does not exist"</span>,
             <span class="prelude-val">Some</span>(content_dir.clone()),
+            <span class="prelude-val">None</span>,
         ));
     }
 
@@ -556,16 +487,6 @@
 </span><span class="kw">fn </span>minify_content(content: <span class="kw-2">&amp;</span>str) -&gt; String {
     <span class="comment">// Placeholder minification: replace multiple spaces with a single space.
     </span>content.split_whitespace().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;().join(<span class="string">" "</span>)
-}
-
-<span class="doccomment">/// Starts the development server on the specified port.
-</span><span class="kw">fn </span>serve_site(port: u16, watch: bool) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="macro">info!</span>(
-        <span class="string">"Starting development server on port {} with watch mode: {}"</span>,
-        port, watch
-    );
-
-    <span class="prelude-val">Ok</span>(())
 }
 
 <span class="doccomment">/// Displays the NucleusFlow banner with version and description information.
@@ -633,21 +554,6 @@
             PathBuf::from(<span class="string">"content"</span>).as_path()
         );
         <span class="macro">assert!</span>(build_cmd.get_flag(<span class="string">"minify"</span>));
-    }
-
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>test_serve_command() {
-        <span class="kw">let </span>matches = get_matches(<span class="macro">vec!</span>[
-            <span class="string">"nucleusflow"</span>,
-            <span class="string">"serve"</span>,
-            <span class="string">"--port"</span>,
-            <span class="string">"8080"</span>,
-            <span class="string">"--watch"</span>,
-        ]);
-        <span class="kw">let </span>serve_cmd = matches.subcommand_matches(<span class="string">"serve"</span>).unwrap();
-
-        <span class="macro">assert_eq!</span>(serve_cmd.get_one::&lt;u16&gt;(<span class="string">"port"</span>).unwrap(), <span class="kw-2">&amp;</span><span class="number">8080</span>);
-        <span class="macro">assert!</span>(serve_cmd.get_flag(<span class="string">"watch"</span>));
     }
 }
 </code></pre></div></section></main></body></html>

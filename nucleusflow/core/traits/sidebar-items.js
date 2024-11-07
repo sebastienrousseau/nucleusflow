@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["ProcessingOptions"],"trait":["Generator","ProcessingContext","Processor","Shareable","Transform","Validator"]};

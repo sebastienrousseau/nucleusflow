@@ -1,0 +1,41 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Provides processors for content transformation."><title>nucleusflow::processors - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-590a400c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="nucleusflow" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.0-nightly (854980293 2024-11-06)" data-channel="nightly" data-search-js="search-c5a66128.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://kura.pro/nucleusflow/images/favicon.ico"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../../nucleusflow/index.html"><img src="https://kura.pro/nucleusflow/images/logos/nucleusflow.svg" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../../nucleusflow/index.html"><img src="https://kura.pro/nucleusflow/images/logos/nucleusflow.svg" alt="logo"></a><h2><a href="../../nucleusflow/index.html">nucleusflow</a><span class="version">0.0.1</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module processors</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#content-processors-module" title="Content Processors Module">Content Processors Module</a><ul><li><a href="#available-processors" title="Available Processors">Available Processors</a></li><li><a href="#usage" title="Usage">Usage</a></li><li><a href="#implementing-custom-processors" title="Implementing Custom Processors">Implementing Custom Processors</a></li></ul></li></ul><h3><a href="#reexports">Module Items</a></h3><ul class="block"><li><a href="#reexports" title="Re-exports">Re-exports</a></li><li><a href="#modules" title="Modules">Modules</a></li><li><a href="#structs" title="Structs">Structs</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate nucleusflow</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../index.html">nucleusflow</a></span><h1>Module <span>processors</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/nucleusflow/processors/mod.rs.html#1-134">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Provides processors for content transformation.</p>
+<h2 id="content-processors-module"><a class="doc-anchor" href="#content-processors-module">§</a>Content Processors Module</h2>
+<p>This module provides various content processors for different formats and types.
+Each processor implements the core processing traits and handles specific content
+types (e.g., Markdown, HTML, etc.).</p>
+<h3 id="available-processors"><a class="doc-anchor" href="#available-processors">§</a>Available Processors</h3>
+<ul>
+<li>[<code>markdown</code>]: Processes Markdown content with support for frontmatter and extensions</li>
+</ul>
+<h3 id="usage"><a class="doc-anchor" href="#usage">§</a>Usage</h3>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>nucleusflow::processors::markdown::MarkdownProcessor;
+<span class="kw">use </span>nucleusflow::core::traits::Processor;
+<span class="kw">use </span>nucleusflow::ContentProcessor;
+
+<span class="kw">let </span>processor = MarkdownProcessor::new()
+    .with_tables(<span class="bool-val">true</span>)
+    .with_footnotes(<span class="bool-val">true</span>);
+
+<span class="kw">let </span>content = <span class="string">"# Hello World\n\nThis is a test."</span>;
+<span class="kw">let </span>result = processor.process(content.to_string(), <span class="prelude-val">None</span>).unwrap();</code></pre></div>
+<h3 id="implementing-custom-processors"><a class="doc-anchor" href="#implementing-custom-processors">§</a>Implementing Custom Processors</h3>
+<p>Custom processors can be implemented by creating a new type that implements
+the [<code>Processor</code>] trait:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attr">#[derive(Debug)]
+</span><span class="kw">struct </span>CustomProcessor;
+
+<span class="kw">impl </span>Processor <span class="kw">for </span>CustomProcessor {
+    <span class="kw">type </span>Input = String;
+    <span class="kw">type </span>Output = String;
+    <span class="kw">type </span>Context = Value;
+
+    <span class="kw">fn </span>process(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        input: <span class="self">Self</span>::Input,
+        _context: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="self">Self</span>::Context&gt;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Output&gt; {
+        <span class="prelude-val">Ok</span>(input.to_uppercase())
+    }
+}</code></pre></div>
+</div></details><h2 id="reexports" class="section-header">Re-exports<a href="#reexports" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name" id="reexport.MarkdownProcessor"><code>pub use markdown::<a class="struct" href="markdown/struct.MarkdownProcessor.html" title="struct nucleusflow::processors::markdown::MarkdownProcessor">MarkdownProcessor</a>;</code></div></li></ul><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="markdown/index.html" title="mod nucleusflow::processors::markdown">markdown</a></div><div class="desc docblock-short">Markdown processing functionality.</div></li></ul><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.ContentMetadata.html" title="struct nucleusflow::processors::ContentMetadata">Content<wbr>Metadata</a></div><div class="desc docblock-short">Common metadata structure for processed content.</div></li><li><div class="item-name"><a class="struct" href="struct.ProcessorConfig.html" title="struct nucleusflow::processors::ProcessorConfig">Processor<wbr>Config</a></div><div class="desc docblock-short">Configuration options for content processing.</div></li></ul></section></div></main></body></html>

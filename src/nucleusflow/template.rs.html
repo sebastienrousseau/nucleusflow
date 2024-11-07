@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/template.rs`."><title>template.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-590a400c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="nucleusflow" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.0-nightly (b3f75cc87 2024-11-02)" data-channel="nightly" data-search-js="search-c5a66128.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="../../static.files/src-script-56102188.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://kura.pro/nucleusflow/images/favicon.ico"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">nucleusflow/</div>template.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/template.rs`."><title>template.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-590a400c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="nucleusflow" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.0-nightly (854980293 2024-11-06)" data-channel="nightly" data-search-js="search-c5a66128.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="../../static.files/src-script-56102188.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://kura.pro/nucleusflow/images/favicon.ico"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">nucleusflow/</div>template.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
 <a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
@@ -438,9 +438,7 @@
 <a href="#437" id="437">437</a>
 <a href="#438" id="438">438</a>
 <a href="#439" id="439">439</a>
-<a href="#440" id="440">440</a>
-<a href="#441" id="441">441</a>
-<a href="#442" id="442">442</a></pre></div><pre class="rust"><code><span class="doccomment">//! # Template Rendering Module
+<a href="#440" id="440">440</a></pre></div><pre class="rust"><code><span class="doccomment">//! # Template Rendering Module
 //!
 //! Provides flexible template rendering capabilities with support for various template engines.
 //! The module offers a pluggable architecture for template rendering with built-in support
@@ -454,7 +452,7 @@
 //! - Partial template support
 //! - Custom helper registration
 
-</span><span class="kw">use crate</span>::{NucleusFlowError, <span class="prelude-ty">Result</span>, TemplateRenderer};
+</span><span class="kw">use crate</span>::{ProcessingError, <span class="prelude-ty">Result</span>, TemplateRenderer};
 <span class="kw">use </span>handlebars::{
     Context, Handlebars, Helper, Output, RenderContext, RenderError,
     RenderErrorReason,
@@ -482,8 +480,8 @@
 <span class="doccomment">/// Provides details for template validation errors.
 </span><span class="attr">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>ValidationError {
-    <span class="doccomment">/// Error message detailing the validation issue
-    </span><span class="kw">pub </span>message: String,
+    <span class="doccomment">/// Error details detailing the validation issue
+    </span><span class="kw">pub </span>details: String,
     <span class="doccomment">/// Line number where error occurred, if available
     </span><span class="kw">pub </span>line: <span class="prelude-ty">Option</span>&lt;usize&gt;,
     <span class="doccomment">/// Column number where error occurred, if available
@@ -492,11 +490,11 @@
     </span><span class="kw">pub </span>source: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
-<span class="kw">impl </span>From&lt;ValidationError&gt; <span class="kw">for </span>NucleusFlowError {
+<span class="kw">impl </span>From&lt;ValidationError&gt; <span class="kw">for </span>ProcessingError {
     <span class="kw">fn </span>from(error: ValidationError) -&gt; <span class="self">Self </span>{
-        NucleusFlowError::TemplateRenderingError {
-            message: error.message,
-            template: String::new(),
+        ProcessingError::TemplateProcessing {
+            details: error.details,
+            template_name: String::new(),
             source: <span class="prelude-val">None</span>,
         }
     }
@@ -571,12 +569,12 @@
         <span class="self">self</span>.engine
             .write()
             .register_partial(name, template)
-            .map_err(|e| NucleusFlowError::TemplateRenderingError {
-                message: <span class="macro">format!</span>(
+            .map_err(|e| ProcessingError::TemplateProcessing {
+                details: <span class="macro">format!</span>(
                     <span class="string">"Failed to register partial '{}': {}"</span>,
                     name, e
                 ),
-                template: name.to_string(),
+                template_name: name.to_string(),
                 source: <span class="prelude-val">Some</span>(Box::new(e)),
             })<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
@@ -589,23 +587,23 @@
 
         <span class="kw">for </span>entry <span class="kw">in
             </span>std::fs::read_dir(<span class="kw-2">&amp;</span><span class="self">self</span>.template_dir).map_err(|e| {
-                NucleusFlowError::TemplateRenderingError {
-                    message: <span class="macro">format!</span>(
+                ProcessingError::TemplateProcessing {
+                    details: <span class="macro">format!</span>(
                         <span class="string">"Failed to read template directory: {}"</span>,
                         e
                     ),
-                    template: String::new(),
+                    template_name: String::new(),
                     source: <span class="prelude-val">Some</span>(Box::new(e)),
                 }
             })<span class="question-mark">?
         </span>{
             <span class="kw">let </span>entry = entry.map_err(|e| {
-                NucleusFlowError::TemplateRenderingError {
-                    message: <span class="macro">format!</span>(
+                ProcessingError::TemplateProcessing {
+                    details: <span class="macro">format!</span>(
                         <span class="string">"Failed to read directory entry: {}"</span>,
                         e
                     ),
-                    template: String::new(),
+                    template_name: String::new(),
                     source: <span class="prelude-val">Some</span>(Box::new(e)),
                 }
             })<span class="question-mark">?</span>;
@@ -619,33 +617,33 @@
                     .file_stem()
                     .and_then(|s| s.to_str())
                     .ok_or_else(|| {
-                        NucleusFlowError::TemplateRenderingError {
-                            message: <span class="string">"Invalid template filename"
+                        ProcessingError::TemplateProcessing {
+                            details: <span class="string">"Invalid template filename"
                                 </span>.to_string(),
-                            template: path.display().to_string(),
+                            template_name: path.display().to_string(),
                             source: <span class="prelude-val">None</span>,
                         }
                     })<span class="question-mark">?</span>;
 
                 <span class="kw">let </span>template_content = std::fs::read_to_string(<span class="kw-2">&amp;</span>path)
                     .map_err(|e| {
-                    NucleusFlowError::TemplateRenderingError {
-                        message: <span class="macro">format!</span>(
+                    ProcessingError::TemplateProcessing {
+                        details: <span class="macro">format!</span>(
                             <span class="string">"Failed to read template file: {}"</span>,
                             e
                         ),
-                        template: path.display().to_string(),
+                        template_name: path.display().to_string(),
                         source: <span class="prelude-val">Some</span>(Box::new(e)),
                     }
                 })<span class="question-mark">?</span>;
 
                 <span class="self">self</span>.validate_template(<span class="kw-2">&amp;</span>template_content).map_err(
-                    |e| NucleusFlowError::TemplateRenderingError {
-                        message: <span class="macro">format!</span>(
+                    |e| ProcessingError::TemplateProcessing {
+                        details: <span class="macro">format!</span>(
                             <span class="string">"Template validation failed: {}"</span>,
                             e
                         ),
-                        template: template_name.to_string(),
+                        template_name: template_name.to_string(),
                         source: <span class="prelude-val">None</span>,
                     },
                 )<span class="question-mark">?</span>;
@@ -656,12 +654,12 @@
                         <span class="kw-2">&amp;</span>template_content,
                     )
                     .map_err(|e| {
-                        NucleusFlowError::TemplateRenderingError {
-                            message: <span class="macro">format!</span>(
+                        ProcessingError::TemplateProcessing {
+                            details: <span class="macro">format!</span>(
                                 <span class="string">"Failed to register template: {}"</span>,
                                 e
                             ),
-                            template: template_name.to_string(),
+                            template_name: template_name.to_string(),
                             source: <span class="prelude-val">Some</span>(Box::new(e)),
                         }
                     })<span class="question-mark">?</span>;
@@ -713,7 +711,7 @@
         <span class="kw">_ </span>= engine
             .render_template(template, <span class="kw-2">&amp;</span>JsonValue::Null)
             .map_err(|e| ValidationError {
-                message: e.to_string(),
+                details: e.to_string(),
                 line: e.line_no,
                 column: e.column_no,
                 source: <span class="prelude-val">Some</span>(template.to_string()),
@@ -727,7 +725,7 @@
                 <span class="string">'{' </span><span class="kw">if </span>in_tag =&gt; brackets.push((<span class="string">'{'</span>, i)),
                 <span class="string">'}' </span><span class="kw">if </span>brackets.pop().is_none() =&gt; {
                     <span class="kw">return </span><span class="prelude-val">Err</span>(ValidationError {
-                        message: <span class="string">"Unmatched closing brace"</span>.to_string(),
+                        details: <span class="string">"Unmatched closing brace"</span>.to_string(),
                         line: <span class="prelude-val">None</span>,
                         column: <span class="prelude-val">Some</span>(i),
                         source: <span class="prelude-val">Some</span>(template.to_string()),
@@ -741,7 +739,7 @@
 
         <span class="kw">if </span>!brackets.is_empty() {
             <span class="kw">return </span><span class="prelude-val">Err</span>(ValidationError {
-                message: <span class="string">"Unmatched opening brace"</span>.to_string(),
+                details: <span class="string">"Unmatched opening brace"</span>.to_string(),
                 line: <span class="prelude-val">None</span>,
                 column: <span class="prelude-val">Some</span>(brackets[<span class="number">0</span>].<span class="number">1</span>),
                 source: <span class="prelude-val">Some</span>(template.to_string()),
@@ -762,12 +760,12 @@
             </span>.template_cache
             .read()
             .get(template)
-            .ok_or_else(|| NucleusFlowError::TemplateRenderingError {
-                message: <span class="macro">format!</span>(
+            .ok_or_else(|| ProcessingError::TemplateProcessing {
+                details: <span class="macro">format!</span>(
                     <span class="string">"Template '{}' not found in cache"</span>,
                     template
                 ),
-                template: template.to_string(),
+                template_name: template.to_string(),
                 source: <span class="prelude-val">None</span>,
             })<span class="question-mark">?
             </span>.clone();
@@ -793,12 +791,12 @@
 
         <span class="kw">for </span>var <span class="kw">in </span>required_vars {
             <span class="kw">if </span>context.get(<span class="kw-2">&amp;</span>var).is_none() {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(NucleusFlowError::TemplateRenderingError {
-                    message: <span class="macro">format!</span>(
+                <span class="kw">return </span><span class="prelude-val">Err</span>(ProcessingError::TemplateProcessing {
+                    details: <span class="macro">format!</span>(
                         <span class="string">"Missing required variable '{}'"</span>,
                         var
                     ),
-                    template: template.to_string(),
+                    template_name: template.to_string(),
                     source: <span class="prelude-val">None</span>,
                 });
             }
@@ -819,9 +817,9 @@
         }
 
         <span class="self">self</span>.engine.read().render(template, context).map_err(|e| {
-            NucleusFlowError::TemplateRenderingError {
-                message: <span class="macro">format!</span>(<span class="string">"Template rendering failed: {}"</span>, e),
-                template: template.to_string(),
+            ProcessingError::TemplateProcessing {
+                details: <span class="macro">format!</span>(<span class="string">"Template rendering failed: {}"</span>, e),
+                template_name: template.to_string(),
                 source: <span class="prelude-val">Some</span>(Box::new(e)),
             }
         })
@@ -833,9 +831,9 @@
         context: <span class="kw-2">&amp;</span>JsonValue,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">if </span>!<span class="self">self</span>.template_cache.read().contains_key(template) {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(NucleusFlowError::TemplateRenderingError {
-                message: <span class="macro">format!</span>(<span class="string">"Template '{}' not found"</span>, template),
-                template: template.to_string(),
+            <span class="kw">return </span><span class="prelude-val">Err</span>(ProcessingError::TemplateProcessing {
+                details: <span class="macro">format!</span>(<span class="string">"Template '{}' not found"</span>, template),
+                template_name: template.to_string(),
                 source: <span class="prelude-val">None</span>,
             });
         }
@@ -865,14 +863,12 @@
             <span class="kw">let </span>text = params
                 .first()
                 .and_then(|p| p.as_str())
-                .ok_or_else(|| {
-                    NucleusFlowError::TemplateRenderingError {
-                    message:
+                .ok_or_else(|| ProcessingError::TemplateProcessing {
+                    details:
                         <span class="string">"Uppercase helper requires a string parameter"
                             </span>.to_string(),
-                    template: String::new(),
+                    template_name: String::new(),
                     source: <span class="prelude-val">None</span>,
-                }
                 })<span class="question-mark">?</span>;
             <span class="prelude-val">Ok</span>(JsonValue::String(text.to_uppercase()))
         }
