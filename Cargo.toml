@@ -33,7 +33,7 @@ categories = [
 ]
 
 # Keywords for easier discoverability on Crates.io
-keywords = ["static-site-generator", "document-conversion", "templating", "content-processing", "nucleusflow"]
+keywords = ["ssg", "frontend", "templating", "static", "nucleusflow"]
 
 # Excluding unnecessary files from the package
 exclude = [
