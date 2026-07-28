@@ -79,7 +79,7 @@ version_check = "0.9"                       # Ensures that a compatible Rust ver
 [dev-dependencies]
 assert_cmd = "2.0"                          # Test command-line applications
 # Dependencies required for testing and development.
-criterion = "0.5"                           # Benchmarking library to test performance
+criterion = "0.8"                           # Benchmarking library to test performance
 predicates = "3.1.2"                          # Predicate testing library
 
 # -----------------------------------------------------------------------------
