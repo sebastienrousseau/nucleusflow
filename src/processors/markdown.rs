@@ -44,7 +44,7 @@ use pulldown_cmark::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
-use serde_yml::from_str;
+use noyalib::from_str;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
