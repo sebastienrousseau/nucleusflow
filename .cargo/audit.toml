@@ -1,0 +1,34 @@
+# cargo-audit configuration.
+#
+# Entries here are SUPPRESSIONS, not fixes. Each one must say why the
+# advisory cannot be resolved from this repository and what would let us
+# drop the suppression.
+
+[advisories]
+ignore = [
+    # RUSTSEC-2026-0235 — rkyv: insufficient archive validation can cause
+    # out-of-bounds reads in archives containing Rc/Arc.
+    # Solution is rkyv >= 0.8.17, which is a semver-major bump.
+    #
+    # Not fixable here. rkyv arrives only transitively, by three paths:
+    #
+    #   minify-html 0.18.1 -> lightningcss 1.0.0-alpha.72
+    #                      -> parcel_sourcemap 2.1.1 -> rkyv 0.7.46
+    #   staticdatagen -> sitemap-gen -> html-generator -> minify-html -> (same)
+    #   staticdatagen -> html-generator -> minify-html -> (same)
+    #
+    # Every crate on those paths is already at its latest published
+    # version, and none has migrated to rkyv 0.8. `cargo update` cannot
+    # cross the major boundary, and dropping minify-html would remove
+    # HTML minification while leaving the staticdatagen paths intact.
+    #
+    # Reachability: nucleusflow never deserializes rkyv archives. rkyv is
+    # an internal detail of parcel_sourcemap's source-map handling inside
+    # the CSS toolchain, and the advisory requires deserializing a
+    # hostile archive containing Rc/Arc. No such input crosses this
+    # crate's boundary.
+    #
+    # Remove this entry when lightningcss/parcel_sourcemap publish a
+    # release on rkyv >= 0.8.17. Re-check on the next dependency sweep.
+    "RUSTSEC-2026-0235",
+]
