@@ -39,12 +39,12 @@ use crate::core::{
     error::{ProcessingError, Result},
     traits::Processor,
 };
+use noyalib::from_str;
 use pulldown_cmark::{
     html, Event, HeadingLevel, Options as MarkdownOptions, Parser, Tag,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
-use serde_yml::from_str;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
