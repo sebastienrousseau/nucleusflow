@@ -1113,11 +1113,10 @@ fn enforce_production_security(config: &mut Config) -> Result<()> {
     config.template.strict_mode = true;
 
     // Ensure secure file permissions
-#[cfg(unix)]
-{
-    config.output.file_permissions &= 0o644;
-}
-
+    #[cfg(unix)]
+    {
+        config.output.file_permissions &= 0o644;
+    }
 
     // Enforce minimum rate limiting
     if config.output.rate_limit == 0 {

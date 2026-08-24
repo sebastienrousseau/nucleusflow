@@ -135,7 +135,10 @@ fn setup_logging(verbosity: u8) {
 
 /// Handles the creation of a new project.
 fn handle_new(name: &str, template: &str) -> Result<()> {
-    info!("Creating new project '{}' with template '{}'", name, template);
+    info!(
+        "Creating new project '{}' with template '{}'",
+        name, template
+    );
 
     // Validate project name
     if !is_valid_project_name(name) {
@@ -148,11 +151,14 @@ fn handle_new(name: &str, template: &str) -> Result<()> {
     let project_dir = PathBuf::from(name);
     if project_dir.exists() {
         error!("Directory already exists: {}", name);
-        return Err(anyhow::anyhow!("Project directory already exists"));
+        return Err(anyhow::anyhow!(
+            "Project directory already exists"
+        ));
     }
 
     // Create project structure
-    create_project_structure(&project_dir, template).context("Failed to create project structure")?;
+    create_project_structure(&project_dir, template)
+        .context("Failed to create project structure")?;
 
     info!("Successfully created new project: {}", name);
     Ok(())
@@ -167,23 +173,22 @@ fn is_valid_project_name(name: &str) -> bool {
 }
 
 /// Creates the project directory structure and initial files.
-fn create_project_structure(project_dir: &Path, template: &str) -> Result<()> {
+fn create_project_structure(
+    project_dir: &Path,
+    template: &str,
+) -> Result<()> {
     debug!("Creating project structure in: {:?}", project_dir);
 
     // Create required directories
-    let dirs = [
-        "",
-        "content",
-        "templates",
-        "static",
-        "themes",
-        "config",
-    ];
+    let dirs =
+        ["", "content", "templates", "static", "themes", "config"];
 
     for dir in dirs {
         let path = project_dir.join(dir);
-        std::fs::create_dir_all(&path)
-            .context(format!("Failed to create directory: {:?}", path))?;
+        std::fs::create_dir_all(&path).context(format!(
+            "Failed to create directory: {:?}",
+            path
+        ))?;
     }
 
     // Create initial config file
@@ -209,7 +214,10 @@ template = "{}"
 }
 
 /// Copies template files to the new project directory.
-fn copy_template_files(_project_dir: &Path, template: &str) -> Result<()> {
+fn copy_template_files(
+    _project_dir: &Path,
+    template: &str,
+) -> Result<()> {
     let template_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("templates")
         .join(template);
@@ -240,8 +248,12 @@ fn handle_build(
     info!("  Config file: {:?}", config_path);
 
     // Initialize NucleusFlow components
-    let config = NucleusFlowConfig::new(&content_dir, &output_dir, &template_dir)
-        .context("Failed to create NucleusFlow configuration")?;
+    let config = NucleusFlowConfig::new(
+        &content_dir,
+        &output_dir,
+        &template_dir,
+    )
+    .context("Failed to create NucleusFlow configuration")?;
 
     let content_processor = FileContentProcessor::new(content_dir);
     let template_renderer = HtmlTemplateRenderer::new(template_dir);
@@ -289,7 +301,9 @@ fn main() {
 
     // Handle commands
     let result = match cli.command {
-        Commands::New { name, template } => handle_new(&name, &template),
+        Commands::New { name, template } => {
+            handle_new(&name, &template)
+        }
         Commands::Build {
             content_dir,
             output_dir,
@@ -355,14 +369,8 @@ mod tests {
         create_project_structure(&project_path, "blog")?;
 
         // Verify directory structure
-        let expected_dirs = [
-            "",
-            "content",
-            "templates",
-            "static",
-            "themes",
-            "config",
-        ];
+        let expected_dirs =
+            ["", "content", "templates", "static", "themes", "config"];
 
         for dir in expected_dirs {
             assert!(
@@ -411,7 +419,11 @@ template = "blog"
                 2 => log::LevelFilter::Debug,
                 _ => log::LevelFilter::Trace,
             };
-            assert_eq!(level, expected_level, "Incorrect log level for verbosity {}", verbosity);
+            assert_eq!(
+                level, expected_level,
+                "Incorrect log level for verbosity {}",
+                verbosity
+            );
         }
     }
 }
