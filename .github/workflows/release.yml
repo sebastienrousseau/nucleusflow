@@ -1,12 +1,21 @@
 name: 🧪 Release
 
+# Releases are cut by pushing a version tag. This workflow used to run on
+# every push to a branch, which meant a full build matrix and a crates.io
+# publish attempt per commit -- the publish necessarily failing once that
+# version was already uploaded.
 on:
   push:
-    branches: [main, feat/nucleusflow]
-  pull_request:
-    branches: [feat/nucleusflow]
-  release:
-    types: [created]
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+  # Manual runs are a smoke test by default: guard + build + a
+  # trusted-publishing handshake, with no release and no publish.
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Create the GitHub release and publish to crates.io"
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,9 +26,79 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
+  # Resolve the version once and decide whether crates.io already has it,
+  # so re-running an existing tag is a no-op rather than a hard failure.
+  guard:
+    name: ❯ Verify 🔍
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      published: ${{ steps.resolve.outputs.published }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v7
+
+      - name: Resolve version and publication state
+        id: resolve
+        run: |
+          set -euo pipefail
+          version=$(cargo metadata --no-deps --format-version 1 \
+            | jq -r '.packages[] | select(.name == "nucleusflow") | .version')
+          echo "Cargo.toml version: ${version}"
+
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            tag="${GITHUB_REF_NAME#v}"
+            if [ "${tag}" != "${version}" ]; then
+              echo "::error::tag v${tag} does not match Cargo.toml version ${version}"
+              exit 1
+            fi
+          fi
+
+          code=$(curl -sS -o /dev/null -w '%{http_code}' \
+            -H 'User-Agent: nucleusflow-release (github.com/sebastienrousseau/nucleusflow)' \
+            "https://crates.io/api/v1/crates/nucleusflow/${version}")
+          if [ "${code}" = "200" ]; then
+            published=true
+          elif [ "${code}" = "404" ]; then
+            published=false
+          else
+            echo "::error::unexpected crates.io status ${code} for nucleusflow ${version}"
+            exit 1
+          fi
+          echo "already on crates.io: ${published}"
+
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "published=${published}" >> "$GITHUB_OUTPUT"
+
+  # A dispatch with publish=false never reaches the crate job, so the
+  # trusted-publishing config would otherwise go untested until a real
+  # release. This exercises the OIDC exchange alone and publishes nothing.
+  auth-check:
+    name: ❯ Auth check 🔑
+    needs: guard
+    if: github.event_name == 'workflow_dispatch' && !inputs.publish
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Authenticate with crates.io
+        id: auth
+        uses: rust-lang/crates-io-auth-action@v1
+
+      - name: Confirm a token was issued
+        env:
+          CRATES_TOKEN: ${{ steps.auth.outputs.token }}
+        run: |
+          if [ -z "${CRATES_TOKEN}" ]; then
+            echo "::error::crates.io returned no token"
+            exit 1
+          fi
+          echo "Trusted publishing is configured correctly for this repo."
+
   build:
     name: Build 🛠
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: guard
     strategy:
       fail-fast: false
       matrix:
@@ -37,11 +116,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
-      - uses: actions-rs/toolchain@v1
+      # actions-rs/toolchain is archived and actionlint reports its runner
+      # as too old to run; dtolnay/rust-toolchain is the maintained
+      # equivalent and is what the rest of this workflow already uses.
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          target: ${{ matrix.target }}
-          override: true
+          targets: ${{ matrix.target }}
       - uses: actions/cache@v6
         with:
           path: |
@@ -77,13 +157,15 @@ jobs:
 
   release:
     name: Release 🚀
-    needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [guard, build]
+    if: github.event_name == 'push' || inputs.publish
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      # Version comes from the guard job, which has already checked it
+      # against the tag being released.
       - name: Set version
-        run: echo "VERSION=$(grep -m 1 '^version =' Cargo.toml | cut -d '"' -f 2)" >> $GITHUB_ENV
+        run: echo "VERSION=${{ needs.guard.outputs.version }}" >> "$GITHUB_ENV"
       - uses: actions/download-artifact@v8
         with:
           path: artifacts
@@ -93,15 +175,16 @@ jobs:
           cat TEMPLATE.md >> CHANGELOG.md
           git log --pretty=format:'%s' --reverse HEAD >> CHANGELOG.md
           echo "" >> CHANGELOG.md
-      - uses: actions/create-release@v1
+      # gh is preinstalled on the runner, so this replaces the archived
+      # actions/create-release@v1 without adding a third-party dependency.
+      - name: Create draft release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ env.VERSION }}
-          release_name: NucleusFlow 🦀 v${{ env.VERSION }}
-          body_path: CHANGELOG.md
-          draft: true
-          prerelease: false
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${VERSION}" \
+            --title "NucleusFlow 🦀 v${VERSION}" \
+            --notes-file CHANGELOG.md \
+            --draft
       - name: Upload Release Assets
         run: |
           for asset in artifacts/*/*; do
@@ -112,7 +195,10 @@ jobs:
 
   crate:
     name: Publish to Crates.io 🦀
-    needs: release
+    if: |
+      (github.event_name == 'push' || inputs.publish)
+      && needs.guard.outputs.published == 'false'
+    needs: [guard, release]
     runs-on: ubuntu-latest
     permissions:
       contents: read
