@@ -21,7 +21,7 @@ concurrency:
 jobs:
   ci:
     name: Rust CI
-    uses: sebastienrousseau/pipelines/.github/workflows/rust-ci.yml@41d9a0d3043c8a289cc06ac3a84e0ac1b1814b71
+    uses: sebastienrousseau/pipelines/.github/workflows/rust-ci.yml@85c17c62078f441ab6a7a0c2356f01a67d2db5ec
     with:
       rust-version: 'stable'
       run-clippy: true
