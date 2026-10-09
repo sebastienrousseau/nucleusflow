@@ -5,7 +5,7 @@
 [package]
 # General project metadata
 name = "nucleusflow"                       # The name of the library
-version = "0.0.1"                          # Initial version of the crate
+version = "0.0.2"                          # Initial version of the crate
 authors = ["NucleusFlow Contributors"]     # Library contributors
 edition = "2021"                           # Rust edition being used
 rust-version = "1.56.0"                    # Minimum supported Rust version
@@ -99,7 +99,7 @@ parking_lot = "0.12"
 pulldown-cmark = "0.13"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-noyalib = { version = "0.0.28", default-features = false, features = ["std"] }
+noyalib = { version = "0.0.57", default-features = false, features = ["std"] }
 staticdatagen = "0.0.21"
 tempfile = "3.13"
 thiserror = "2.0"
