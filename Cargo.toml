@@ -89,7 +89,7 @@ predicates = "3.1.2"                          # Predicate testing library
 # Required dependencies for building and running the project.
 
 anyhow = "1.0"
-clap = "4.5"
+clap = { version = "4.5", features = ["derive"] }
 env_logger = "0.11"
 handlebars = "6.2"
 html5ever = "0.40"
@@ -100,7 +100,7 @@ pulldown-cmark = "0.13"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 noyalib = { version = "0.0.57", default-features = false, features = ["std"] }
-staticdatagen = "0.0.21"
+staticdatagen = "0.0.22"
 tempfile = "3.13"
 thiserror = "2.0"
 toml = "1.1"
@@ -158,7 +158,6 @@ future_incompatible = { level = "deny", priority = -1 } # Handle future compatib
 keyword_idents = { level = "deny", priority = -1 }      # Deny usage of keywords as identifiers
 macro_use_extern_crate = "deny"             # Deny macro use of `extern crate`
 meta_variable_misuse = "deny"               # Deny misuse of meta variables in macros
-missing_fragment_specifier = "deny"         # Deny missing fragment specifiers in macros
 noop_method_call = "deny"                   # Deny method calls that have no effect
 rust_2018_idioms = { level = "deny", priority = -1 }    # Enforce Rust 2018 idioms
 rust_2021_compatibility = { level = "deny", priority = -1 } # Enforce Rust 2021 compatibility
