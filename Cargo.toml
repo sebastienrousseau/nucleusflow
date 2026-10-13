@@ -8,7 +8,7 @@ name = "nucleusflow"                       # The name of the library
 version = "0.0.2"                          # Initial version of the crate
 authors = ["NucleusFlow Contributors"]     # Library contributors
 edition = "2021"                           # Rust edition being used
-rust-version = "1.56.0"                    # Minimum supported Rust version
+rust-version = "1.89.0"                    # Minimum supported Rust version
 license = "MIT OR Apache-2.0"              # Dual licensing strategy
 description = """
 A powerful Rust library for content processing, enabling static site generation, document conversion, and templating.
