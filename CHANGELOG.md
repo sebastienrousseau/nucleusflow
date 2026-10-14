@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The unused `euxis-commons` git dependency is gone. Nothing in the
   crate used it, and as a git dependency without a version it made
   `cargo package` and the crates.io publish fail.
+- The trait and processor module docs link their items by full path,
+  so `cargo doc` with `-D warnings` is clean.
 
 ## [0.0.2] - 2026-10-11
 
