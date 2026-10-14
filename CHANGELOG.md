@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Profile` derives `Default` (`#[default] Development`) instead of a
   hand-written impl, as clippy asks once the floor allows it. The
   default is unchanged.
+- The unused `euxis-commons` git dependency is gone. Nothing in the
+  crate used it, and as a git dependency without a version it made
+  `cargo package` and the crates.io publish fail.
 
 ## [0.0.2] - 2026-10-11
 
