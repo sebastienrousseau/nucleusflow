@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The unused `staticdatagen` dependency is gone. Nothing in the crate
   used it, and it brought 71 crates into the build, among them
   `bincode` 1.3.3 (RUSTSEC-2025-0141, unmaintained) through `syntect`.
+- `Cargo.lock` is tracked. nucleusflow ships a binary, and the
+  release builds and `cargo audit` now resolve the same, reviewed
+  dependency versions instead of whatever is newest on the day. It
+  builds with `--locked` on Rust 1.89.0.
 
 ## [0.0.2] - 2026-10-11
 
