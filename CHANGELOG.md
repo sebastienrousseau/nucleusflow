@@ -35,6 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   actionlint and shellcheck: `tar` takes its file list after `--`, so
   a file whose name starts with a dash is archived instead of read as an
   option, and the changelog is written by one grouped redirect.
+- `deny.toml` allows Unicode-3.0 (ICU4X, unicode-ident,
+  unicode-id-start) and Apache-2.0 WITH LLVM-exception
+  (dragonbox_ecma), two permissive licences the allow list never named.
 
 ## [0.0.2] - 2026-10-11
 
