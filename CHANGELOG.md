@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   release builds and `cargo audit` now resolve the same, reviewed
   dependency versions instead of whatever is newest on the day. It
   builds with `--locked` on Rust 1.89.0.
+- CI runs the shared pipelines audit job against the committed
+  lockfile. It was switched off because the lockfile was ignored, which
+  is why the Audit check showed as skipped on the release PR; the
+  in-repo `cargo-audit` job that stood in for it is gone.
 
 ## [0.0.2] - 2026-10-11
 
