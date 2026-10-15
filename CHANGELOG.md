@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `cargo package` and the crates.io publish fail.
 - The trait and processor module docs link their items by full path,
   so `cargo doc` with `-D warnings` is clean.
+- The unused `staticdatagen` dependency is gone. Nothing in the crate
+  used it, and it brought 71 crates into the build, among them
+  `bincode` 1.3.3 (RUSTSEC-2025-0141, unmaintained) through `syntect`.
 
 ## [0.0.2] - 2026-10-11
 
