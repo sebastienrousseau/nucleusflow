@@ -31,6 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   lockfile. It was switched off because the lockfile was ignored, which
   is why the Audit check showed as skipped on the release PR; the
   in-repo `cargo-audit` job that stood in for it is gone.
+- The release workflow's packaging and changelog steps pass
+  actionlint and shellcheck: `tar` takes its file list after `--`, so
+  a file whose name starts with a dash is archived instead of read as an
+  option, and the changelog is written by one grouped redirect.
 
 ## [0.0.2] - 2026-10-11
 
