@@ -1,0 +1,14 @@
+Source: nucleusflow
+Section: utils
+Priority: optional
+Maintainer: Sebastien Rousseau <sebastian.rousseau@gmail.com>
+Build-Depends: debhelper-compat (= 13), cargo, rustc
+Standards-Version: 4.6.2
+Homepage: https://nucleusflow.com
+
+Package: nucleusflow
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: High-performance, memory-safe static site generator
+ NucleusFlow is a fast and secure static site generator and content
+ processing pipeline written in Rust with zero-unsafe code guarantees.

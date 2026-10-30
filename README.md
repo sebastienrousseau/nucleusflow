@@ -55,24 +55,47 @@
 
 ## Install
 
-### As a Rust library
+### Pre-built binaries
+
+Download the latest pre-compiled archive for your platform from [GitHub Releases](https://github.com/sebastienrousseau/nucleusflow/releases/latest):
+
+```bash
+# Extract and install into your local PATH
+tar -xzf nucleusflow-*.tar.gz
+sudo make -f GNUmakefile install
+```
+
+### Via Cargo
+
+```bash
+cargo install nucleusflow --locked
+```
+
+### As a Rust library dependency
+
+Add NucleusFlow to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-nucleusflow = "0.0.6"
+nucleusflow = "0.0.7"
 ```
 
-Or install via Cargo:
+Or run:
 
 ```bash
 cargo add nucleusflow
 ```
 
-### As a CLI tool
+### Package managers and distribution
 
-```bash
-cargo install nucleusflow --locked
-```
+Formulas and packaging recipes are provided under [`pkg/`](pkg/):
+
+- **Homebrew**: [`pkg/brew/nucleusflow.rb`](pkg/brew/nucleusflow.rb)
+- **Arch Linux (AUR)**: [`pkg/aur/PKGBUILD`](pkg/aur/PKGBUILD)
+- **Debian / Ubuntu**: [`pkg/debian/`](pkg/debian/)
+- **RPM (Fedora / RHEL)**: [`pkg/rpm/nucleusflow.spec`](pkg/rpm/nucleusflow.spec)
+- **Nix**: [`pkg/nix/flake.nix`](pkg/nix/flake.nix)
+- **Container**: `docker build -t nucleusflow .`
 
 ---
 

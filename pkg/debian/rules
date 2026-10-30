@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	cargo build --release --bin nucleusflow
+
+override_dh_auto_test:
+	cargo test
+
+override_dh_auto_install:
+	make -f GNUmakefile PREFIX=/usr DESTDIR=debian/nucleusflow install

@@ -1,0 +1,53 @@
+#compdef nucleusflow
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+
+_nucleusflow() {
+    local -a commands
+    commands=(
+        'new:Create a new static site project'
+        'build:Build the static site'
+        'serve:Start the development server'
+        'help:Print this message or the help of the given subcommand(s)'
+    )
+
+    _arguments -C \
+        '(-v --verbose)'{-v,--verbose}'[Enable verbose logging]' \
+        '(-h --help)'{-h,--help}'[Print help]' \
+        '(-V --version)'{-V,--version}'[Print version]' \
+        '1: :->command' \
+        '*:: :->args'
+
+    case $state in
+        command)
+            _describe -t commands 'nucleusflow command' commands
+            ;;
+        args)
+            case $line[1] in
+                new)
+                    _arguments \
+                        '(-t --template)'{-t,--template}'[Template to use]:template:(blog docs portfolio)' \
+                        '(-h --help)'{-h,--help}'[Print help]' \
+                        '1:project name:_files'
+                    ;;
+                build)
+                    _arguments \
+                        '(-c --content-dir)'{-c,--content-dir}'[Path to content directory]:directory:_files -/' \
+                        '(-o --output-dir)'{-o,--output-dir}'[Path to output directory]:directory:_files -/' \
+                        '(-t --template-dir)'{-t,--template-dir}'[Path to template directory]:directory:_files -/' \
+                        '(-m --minify)'{-m,--minify}'[Enable minification of output files]' \
+                        '(-f --config)'{-f,--config}'[Build configuration file]:config file:_files' \
+                        '(-h --help)'{-h,--help}'[Print help]'
+                    ;;
+                serve)
+                    _arguments \
+                        '(-p --port)'{-p,--port}'[Port to serve on]:port number:' \
+                        '(-w --watch)'{-w,--watch}'[Enable file watching]' \
+                        '(-d --dir)'{-d,--dir}'[Base directory to serve from]:directory:_files -/' \
+                        '(-h --help)'{-h,--help}'[Print help]'
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+_nucleusflow "$@"

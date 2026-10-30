@@ -1,7 +1,7 @@
 # Makefile for NucleusFlow
 # Works on macOS and Linux without modification.
 
-.PHONY: all check clippy test fmt lint deny audit doc examples clean help
+.PHONY: all check clippy test fmt lint deny audit doc examples clean install uninstall verify-versions help
 
 # Default single validation gate
 all: check clippy test
@@ -31,6 +31,15 @@ doc: ## Build documentation with rustdoc
 
 examples: ## Run basic examples
 	@cargo run --example basic
+
+verify-versions: ## Verify that release version numbers are synchronized
+	@./scripts/verify-release-versions.sh
+
+install: ## Install binary, manpage, and completions using Unix contract
+	@$(MAKE) -f GNUmakefile install
+
+uninstall: ## Uninstall binary, manpage, and completions
+	@$(MAKE) -f GNUmakefile uninstall
 
 clean: ## Clean build artifacts
 	@cargo clean
