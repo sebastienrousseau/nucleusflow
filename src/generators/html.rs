@@ -58,7 +58,7 @@ const VOID_ELEMENTS: &[&str] = &[
 /// List of optional tags in HTML5
 const OPTIONAL_TAGS: &[&str] = &[
     "html", "head", "body", "tbody", "thead", "tfoot", "tr", "th",
-    "td", "li", "dt", "dd",
+    "td", "li", "dt", "dd", "p",
 ];
 
 /// Configuration options for HTML output generation.
@@ -442,6 +442,8 @@ impl HtmlGenerator {
         let cfg = Cfg {
             minify_css: true,
             minify_js: true,
+            keep_closing_tags: true,
+            keep_html_and_head_opening_tags: true,
             ..Cfg::default()
         };
         String::from_utf8(minify(content.as_bytes(), &cfg)).map_err(

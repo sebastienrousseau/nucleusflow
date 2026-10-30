@@ -1,0 +1,26 @@
+# Codecov configuration for nucleusflow.
+#
+# Coverage floors and informational reporting.
+# Project and patch gates surface coverage deltas on PRs.
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+        informational: true
+
+    patch:
+      default:
+        target: auto
+        threshold: 5%
+        informational: true
+
+comment: false
+
+ignore:
+  - "benches/**"
+  - "examples/**"
+  - "tests/**"
+  - "build.rs"

@@ -133,8 +133,12 @@ fn setup_logging(verbosity: u8) {
     debug!("Logging initialized at level: {:?}", log_level);
 }
 
-/// Handles the creation of a new project.
-fn handle_new(name: &str, template: &str) -> Result<()> {
+/// Handles the creation of a new project in the specified base directory.
+fn handle_new_at(
+    base_dir: &Path,
+    name: &str,
+    template: &str,
+) -> Result<()> {
     info!(
         "Creating new project '{}' with template '{}'",
         name, template
@@ -148,9 +152,9 @@ fn handle_new(name: &str, template: &str) -> Result<()> {
         ));
     }
 
-    let project_dir = PathBuf::from(name);
+    let project_dir = base_dir.join(name);
     if project_dir.exists() {
-        error!("Directory already exists: {}", name);
+        error!("Directory already exists: {:?}", project_dir);
         return Err(anyhow::anyhow!(
             "Project directory already exists"
         ));
@@ -162,6 +166,11 @@ fn handle_new(name: &str, template: &str) -> Result<()> {
 
     info!("Successfully created new project: {}", name);
     Ok(())
+}
+
+/// Handles the creation of a new project.
+fn handle_new(name: &str, template: &str) -> Result<()> {
+    handle_new_at(Path::new("."), name, template)
 }
 
 /// Validates a project name for safety and compatibility.
@@ -334,21 +343,19 @@ fn handle_serve(port: u16, watch: bool, dir: PathBuf) -> Result<()> {
     Ok(())
 }
 
-/// Serves a single HTTP connection.
-fn serve_connection(
-    mut stream: std::net::TcpStream,
+/// Serves an HTTP connection stream with file lookup and MIME dispatch.
+fn serve_stream<R: std::io::BufRead, W: std::io::Write>(
+    mut reader: R,
+    mut writer: W,
     dir: &Path,
 ) -> std::io::Result<()> {
-    use std::io::{BufRead, BufReader, Write};
-
-    let mut reader = BufReader::new(&stream);
     let mut request_line = String::new();
     let _ = reader.read_line(&mut request_line)?;
 
     let parts: Vec<&str> = request_line.split_whitespace().collect();
     if parts.len() < 2 || parts[0] != "GET" {
         let response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\n\r\n";
-        stream.write_all(response.as_bytes())?;
+        writer.write_all(response.as_bytes())?;
         return Ok(());
     }
 
@@ -388,30 +395,35 @@ fn serve_connection(
             mime,
             content.len()
         );
-        stream.write_all(header.as_bytes())?;
-        stream.write_all(&content)?;
+        writer.write_all(header.as_bytes())?;
+        writer.write_all(&content)?;
     } else {
         let body = b"<h1>404 Not Found</h1>";
         let header = format!(
             "HTTP/1.1 404 Not Found\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
             body.len()
         );
-        stream.write_all(header.as_bytes())?;
-        stream.write_all(body)?;
+        writer.write_all(header.as_bytes())?;
+        writer.write_all(body)?;
     }
 
-    stream.flush()?;
+    writer.flush()?;
     Ok(())
 }
 
-fn main() {
-    let cli = Cli::parse();
+/// Serves a single HTTP connection.
+fn serve_connection(
+    stream: std::net::TcpStream,
+    dir: &Path,
+) -> std::io::Result<()> {
+    let writer = stream.try_clone()?;
+    let reader = std::io::BufReader::new(stream);
+    serve_stream(reader, writer, dir)
+}
 
-    // Initialize logging based on verbosity flag
-    setup_logging(cli.verbose);
-
-    // Handle commands
-    let result = match cli.command {
+/// Dispatches a parsed CLI command.
+fn execute_command(command: Commands) -> Result<()> {
+    match command {
         Commands::New { name, template } => {
             handle_new(&name, &template)
         }
@@ -431,7 +443,17 @@ fn main() {
         Commands::Serve { port, watch, dir } => {
             handle_serve(port, watch, dir)
         }
-    };
+    }
+}
+
+fn main() {
+    let cli = Cli::parse();
+
+    // Initialize logging based on verbosity flag
+    setup_logging(cli.verbose);
+
+    // Handle commands
+    let result = execute_command(cli.command);
 
     // Handle any errors that occurred during execution
     if let Err(err) = result {
@@ -564,6 +586,283 @@ template = "blog"
         let html = std::fs::read_to_string(output_file)?;
         assert!(html.contains("<!DOCTYPE html>"));
         assert!(html.contains("integration-site"));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_handle_new_invalid_name() -> Result<()> {
+        let temp_dir = TempDir::new()?;
+        assert!(
+            handle_new_at(temp_dir.path(), "-invalid", "blog").is_err()
+        );
+        assert!(
+            handle_new_at(temp_dir.path(), "invalid!", "blog").is_err()
+        );
+        assert!(handle_new_at(temp_dir.path(), "", "blog").is_err());
+        assert!(handle_new("-invalid", "blog").is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn test_handle_new_collision() -> Result<()> {
+        let temp_dir = TempDir::new()?;
+        let site_path = temp_dir.path().join("my-site");
+        std::fs::create_dir_all(&site_path)?;
+        let err = handle_new_at(temp_dir.path(), "my-site", "blog");
+        assert!(err.is_err());
+        assert!(err
+            .unwrap_err()
+            .to_string()
+            .contains("Project directory already exists"));
+        Ok(())
+    }
+
+    #[test]
+    fn test_handle_new_success() -> Result<()> {
+        let temp_dir = TempDir::new()?;
+        assert!(handle_new_at(temp_dir.path(), "awesome-site", "blog")
+            .is_ok());
+        assert!(temp_dir
+            .path()
+            .join("awesome-site")
+            .join("content")
+            .join("index.md")
+            .exists());
+        assert!(temp_dir
+            .path()
+            .join("awesome-site")
+            .join("templates")
+            .join("default.hbs")
+            .exists());
+        Ok(())
+    }
+
+    #[test]
+    fn test_copy_template_files_missing() -> Result<()> {
+        let temp_dir = TempDir::new()?;
+        assert!(copy_template_files(
+            temp_dir.path(),
+            "nonexistent-template-123"
+        )
+        .is_ok());
+        Ok(())
+    }
+
+    #[test]
+    fn test_handle_build_minify_and_missing_content() -> Result<()> {
+        init_test_logger();
+
+        let temp_dir = TempDir::new()?;
+        let project_path = temp_dir.path().join("minified-site");
+        create_project_structure(&project_path, "blog")?;
+
+        let content_dir = project_path.join("content");
+        let output_dir = project_path.join("public");
+        let template_dir = project_path.join("templates");
+        let config_path = project_path.join("config/config.toml");
+
+        // Build with minify = true
+        handle_build(
+            content_dir.clone(),
+            output_dir.clone(),
+            template_dir.clone(),
+            true,
+            config_path.clone(),
+        )?;
+
+        let output_file = output_dir.join("index.html");
+        assert!(output_file.exists());
+        let html = std::fs::read_to_string(&output_file)?;
+        assert!(html.to_lowercase().contains("<!doctype html>"));
+
+        // Build with missing content dir should fail
+        let missing_content = temp_dir.path().join("does_not_exist");
+        assert!(handle_build(
+            missing_content,
+            output_dir,
+            template_dir,
+            false,
+            config_path
+        )
+        .is_err());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_handle_serve_missing_dir() {
+        let missing_dir =
+            PathBuf::from("/nonexistent/directory/path/for/test");
+        assert!(handle_serve(9999, false, missing_dir).is_err());
+    }
+
+    #[test]
+    fn test_serve_stream_methods_and_mimes() -> Result<()> {
+        let temp_dir = TempDir::new()?;
+        let doc_root = temp_dir.path();
+        std::fs::write(doc_root.join("index.html"), "<h1>Home</h1>")?;
+        std::fs::write(
+            doc_root.join("style.css"),
+            "body { margin: 0; }",
+        )?;
+        std::fs::write(doc_root.join("app.js"), "console.log('hi');")?;
+        std::fs::write(
+            doc_root.join("data.json"),
+            "{\"key\": \"val\"}",
+        )?;
+        std::fs::write(doc_root.join("image.svg"), "<svg></svg>")?;
+        std::fs::write(doc_root.join("photo.jpg"), "fake-jpeg")?;
+        std::fs::write(doc_root.join("image.png"), "fake-png")?;
+        std::fs::write(doc_root.join("anim.gif"), "fake-gif")?;
+        std::fs::write(doc_root.join("icon.ico"), "fake-ico")?;
+        std::fs::write(doc_root.join("note.txt"), "hello world")?;
+        std::fs::write(doc_root.join("data.bin"), b"\x00\x01\x02")?;
+
+        let sub_dir = doc_root.join("nested");
+        std::fs::create_dir_all(&sub_dir)?;
+        std::fs::write(sub_dir.join("index.html"), "<h2>Nested</h2>")?;
+
+        let run_req = |req: &str| -> String {
+            let mut reader = std::io::Cursor::new(req.as_bytes());
+            let mut writer = Vec::new();
+            serve_stream(&mut reader, &mut writer, doc_root).unwrap();
+            String::from_utf8_lossy(&writer).into_owned()
+        };
+
+        // Test GET /
+        let res = run_req("GET / HTTP/1.1\r\n\r\n");
+        assert!(res.starts_with("HTTP/1.1 200 OK"));
+        assert!(res.contains("Content-Type: text/html; charset=utf-8"));
+        assert!(res.contains("<h1>Home</h1>"));
+
+        // Test GET /style.css
+        let res = run_req("GET /style.css HTTP/1.1\r\n\r\n");
+        assert!(res.starts_with("HTTP/1.1 200 OK"));
+        assert!(res.contains("Content-Type: text/css; charset=utf-8"));
+
+        // Test GET /app.js
+        let res = run_req("GET /app.js HTTP/1.1\r\n\r\n");
+        assert!(res.contains("Content-Type: application/javascript"));
+
+        // Test GET /data.json
+        let res = run_req("GET /data.json HTTP/1.1\r\n\r\n");
+        assert!(res.contains("Content-Type: application/json"));
+
+        // Test GET /image.svg
+        let res = run_req("GET /image.svg HTTP/1.1\r\n\r\n");
+        assert!(res.contains("Content-Type: image/svg+xml"));
+
+        // Test GET /photo.jpg
+        let res = run_req("GET /photo.jpg HTTP/1.1\r\n\r\n");
+        assert!(res.contains("Content-Type: image/jpeg"));
+
+        // Test GET /image.png
+        let res = run_req("GET /image.png HTTP/1.1\r\n\r\n");
+        assert!(res.contains("Content-Type: image/png"));
+
+        // Test GET /anim.gif
+        let res = run_req("GET /anim.gif HTTP/1.1\r\n\r\n");
+        assert!(res.contains("Content-Type: image/gif"));
+
+        // Test GET /icon.ico
+        let res = run_req("GET /icon.ico HTTP/1.1\r\n\r\n");
+        assert!(res.contains("Content-Type: image/x-icon"));
+
+        // Test GET /note.txt
+        let res = run_req("GET /note.txt HTTP/1.1\r\n\r\n");
+        assert!(res.contains("Content-Type: text/plain; charset=utf-8"));
+
+        // Test GET /data.bin
+        let res = run_req("GET /data.bin HTTP/1.1\r\n\r\n");
+        assert!(res.contains("Content-Type: application/octet-stream"));
+
+        // Test GET /nested/
+        let res = run_req("GET /nested/ HTTP/1.1\r\n\r\n");
+        assert!(res.starts_with("HTTP/1.1 200 OK"));
+        assert!(res.contains("<h2>Nested</h2>"));
+
+        // Test GET /nested (directory without trailing slash)
+        let res = run_req("GET /nested HTTP/1.1\r\n\r\n");
+        assert!(res.starts_with("HTTP/1.1 200 OK"));
+        assert!(res.contains("<h2>Nested</h2>"));
+
+        // Test GET /missing.html (404)
+        let res = run_req("GET /missing.html HTTP/1.1\r\n\r\n");
+        assert!(res.starts_with("HTTP/1.1 404 Not Found"));
+        assert!(res.contains("404 Not Found"));
+
+        // Test POST /index.html (405)
+        let res = run_req("POST /index.html HTTP/1.1\r\n\r\n");
+        assert!(res.starts_with("HTTP/1.1 405 Method Not Allowed"));
+
+        // Test Malformed request line
+        let res = run_req("MALFORMED\r\n");
+        assert!(res.starts_with("HTTP/1.1 405 Method Not Allowed"));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_serve_connection_loopback() -> Result<()> {
+        use std::io::{Read, Write};
+
+        let temp_dir = TempDir::new()?;
+        let doc_root = temp_dir.path().to_path_buf();
+        std::fs::write(
+            doc_root.join("index.html"),
+            "<h1>Loopback OK</h1>",
+        )?;
+
+        let listener = std::net::TcpListener::bind(("127.0.0.1", 0))?;
+        let addr = listener.local_addr()?;
+
+        let handle = std::thread::spawn(move || {
+            if let Ok((stream, _)) = listener.accept() {
+                let _ = serve_connection(stream, &doc_root);
+            }
+        });
+
+        let mut client = std::net::TcpStream::connect(addr)?;
+        client.write_all(b"GET / HTTP/1.1\r\n\r\n")?;
+        let mut response = String::new();
+        let _ = client.read_to_string(&mut response)?;
+        handle
+            .join()
+            .map_err(|_| anyhow::anyhow!("Thread join failed"))?;
+
+        assert!(response.starts_with("HTTP/1.1 200 OK"));
+        assert!(response.contains("<h1>Loopback OK</h1>"));
+        Ok(())
+    }
+
+    #[test]
+    fn test_execute_command() -> Result<()> {
+        let temp_dir = TempDir::new()?;
+        let project_dir = temp_dir.path().join("cmd-site");
+        create_project_structure(&project_dir, "blog")?;
+
+        let build_cmd = Commands::Build {
+            content_dir: project_dir.join("content"),
+            output_dir: project_dir.join("public"),
+            template_dir: project_dir.join("templates"),
+            minify: false,
+            config: project_dir.join("config/config.toml"),
+        };
+        assert!(execute_command(build_cmd).is_ok());
+
+        let new_err = Commands::New {
+            name: "-invalid".to_string(),
+            template: "blog".to_string(),
+        };
+        assert!(execute_command(new_err).is_err());
+
+        let serve_err = Commands::Serve {
+            port: 19999,
+            watch: false,
+            dir: PathBuf::from("/nonexistent/for/cli/test"),
+        };
+        assert!(execute_command(serve_err).is_err());
 
         Ok(())
     }

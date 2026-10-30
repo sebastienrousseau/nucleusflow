@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.4] - 2026-10-30
+
+### Added
+
+- Added `codecov.yml` enforcing pull request coverage floors (80% target on patch, auto on project) with standard ignore patterns.
+- Added comprehensive unit tests for `src/main.rs`:
+  - `serve_stream`: verified HTTP 200 responses across MIME types (`html`, `css`, `js`, `json`, `svg`, `jpg`, `png`, `gif`, `ico`, `txt`, binary), directory index resolution, 404 Not Found, and 405 Method Not Allowed.
+  - `handle_new_at`: verified project name regex validation, collision detection for existing directories, and scaffold file generation.
+  - `copy_template_files`: verified graceful handling of missing template directories.
+  - `handle_build`: verified minification flag and missing content error branches.
+  - `handle_serve`: verified missing directory error branch.
+  - `execute_command`: verified CLI command dispatch.
+- Added recursive directory walk tests and configuration validation error tests in `src/lib.rs`.
+
+### Fixed
+
+- Added explicit least-privilege `permissions` blocks across GitHub Actions workflows (`ci.yml`, `release.yml`, and `document.yml`), resolving 6 CodeQL alert findings.
+
 ## [0.0.3] - 2026-10-30
 
 ### Changed
