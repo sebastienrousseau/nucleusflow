@@ -1,0 +1,85 @@
+.\" NucleusFlow manual page
+.\" SPDX-License-Identifier: Apache-2.0 OR MIT
+.TH NUCLEUSFLOW 1 "October 2026" "NucleusFlow 0.0.7" "User Commands"
+.SH NAME
+nucleusflow \- A modern, memory-safe static site generator written in Rust
+.SH SYNOPSIS
+.B nucleusflow
+[\fIOPTIONS\fR] \fI<COMMAND>\fR
+.SH DESCRIPTION
+NucleusFlow is a high-performance, memory-safe static site generator and content
+processing pipeline written in Rust. It prioritises security with strict input
+sanitisation, path traversal rejection, and deterministic content generation.
+.SH OPTIONS
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Enable verbose logging (\-v, \-vv, \-vvv).
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help information.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Print version information.
+.SH COMMANDS
+.TP
+\fBnew\fR [\fIOPTIONS\fR] \fI<NAME>\fR
+Create a new static site project.
+.RS
+.TP
+\fI<NAME>\fR
+Name of the new project directory.
+.TP
+\fB\-t\fR, \fB\-\-template\fR \fI<TEMPLATE>\fR
+Starter template to use (\fIblog\fR, \fIdocs\fR, \fIportfolio\fR). Default is \fIblog\fR.
+.RE
+.TP
+\fBbuild\fR [\fIOPTIONS\fR]
+Build the static site from markdown content and Handlebars templates.
+.RS
+.TP
+\fB\-c\fR, \fB\-\-content-dir\fR \fI<CONTENT_DIR>\fR
+Path to content directory. Default is \fIcontent\fR.
+.TP
+\fB\-o\fR, \fB\-\-output-dir\fR \fI<OUTPUT_DIR>\fR
+Path to output directory. Default is \fIpublic\fR.
+.TP
+\fB\-t\fR, \fB\-\-template-dir\fR \fI<TEMPLATE_DIR>\fR
+Path to template directory. Default is \fItemplates\fR.
+.TP
+\fB\-m\fR, \fB\-\-minify\fR
+Enable HTML minification of output files.
+.TP
+\fB\-f\fR, \fB\-\-config\fR \fI<CONFIG>\fR
+Build configuration file. Default is \fInucleusflow.toml\fR.
+.RE
+.TP
+\fBserve\fR [\fIOPTIONS\fR]
+Start the embedded development preview server.
+.RS
+.TP
+\fB\-p\fR, \fB\-\-port\fR \fI<PORT>\fR
+Port to serve on. Default is \fI3000\fR.
+.TP
+\fB\-w\fR, \fB\-\-watch\fR
+Enable file watching and live reloading.
+.TP
+\fB\-d\fR, \fB\-\-dir\fR \fI<DIR>\fR
+Base directory to serve files from. Default is \fIpublic\fR.
+.RE
+.SH EXAMPLES
+.TP
+Create a new blog project:
+.B nucleusflow new mysite --template blog
+.TP
+Build static output with minification:
+.B nucleusflow build --minify
+.TP
+Preview the built site on port 8080:
+.B nucleusflow serve --port 8080 --dir public
+.SH AUTHORS
+Written and maintained by Sebastien Rousseau and NucleusFlow Contributors.
+.SH REPORTING BUGS
+Report bugs at https://github.com/sebastienrousseau/nucleusflow/issues
+.SH COPYRIGHT
+Copyright \(co 2024-2026 Sebastien Rousseau.
+Licensed under Apache-2.0 OR MIT.

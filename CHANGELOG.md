@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.7] - 2026-10-30
+
+### Added
+
+- Added standard Unix install contract (`GNUmakefile`) supporting `PREFIX` and `DESTDIR` staging.
+- Added comprehensive manual page `share/man/man1/nucleusflow.1` for system distributions.
+- Added native shell completions for Bash, Zsh, Fish, and PowerShell under `completions/`.
+- Added Architectural Decision Records in `docs/adr/`:
+  - `0001-zero-unsafe-policy.md`: Compiler-enforced `#![forbid(unsafe_code)]` invariant.
+  - `0002-deterministic-rendering-pipeline.md`: Thread-safe deterministic rendering pipeline.
+  - `0003-path-traversal-rejection.md`: Strict path traversal sanitisation and containment.
+- Added migration guides for static site generator users:
+  - `docs/MIGRATION-HUGO.md`: Step-by-step migration from Hugo.
+  - `docs/MIGRATION-ZOLA.md`: Step-by-step migration from Zola.
+- Added distribution packaging recipes and maintainer guidelines:
+  - `docs/packaging.md`: Packager reference for offline vendoring and toolchain policy.
+  - `pkg/brew/nucleusflow.rb`: Homebrew formula template.
+  - `pkg/aur/PKGBUILD`: Arch Linux AUR package build recipe.
+  - `pkg/debian/`: Debian package control and rules.
+  - `pkg/rpm/nucleusflow.spec`: RPM packaging specification.
+  - `pkg/nix/flake.nix`: Nix flake package definition.
+  - `Dockerfile`: Hardened multi-stage minimal container build based on distroless.
+- Added version verification script `scripts/verify-release-versions.sh`.
+- Added OpenSSF Scorecard security analysis workflow in `.github/workflows/scorecard.yml`.
+- Added maintainer release signing keys in root `KEYS.asc`.
+- Added development container configuration in `.devcontainer/devcontainer.json`.
+- Added static `x86_64-unknown-linux-musl` target to release build matrix.
+
+### Changed
+
+- Synchronised crate and documentation version to `0.0.7`.
+- Expanded `README.md` install documentation covering pre-built binaries, GNUmakefile, and package managers.
+
 ## [0.0.6] - 2026-10-30
 
 ### Changed

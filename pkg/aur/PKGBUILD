@@ -1,0 +1,36 @@
+# Maintainer: Sebastien Rousseau <sebastian.rousseau@gmail.com>
+pkgname=nucleusflow
+pkgver=0.0.7
+pkgrel=1
+pkgdesc="High-performance, memory-safe static site generator written in Rust"
+arch=('x86_64' 'aarch64')
+url="https://nucleusflow.com"
+license=('Apache-2.0' 'MIT')
+depends=('gcc-libs')
+makedepends=('cargo')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/sebastienrousseau/$pkgname/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+prepare() {
+    cd "$pkgname-$pkgver"
+    cargo fetch --locked --target "$CARCH-unknown-linux-gnu"
+}
+
+build() {
+    cd "$pkgname-$pkgver"
+    export RUSTUP_TOOLCHAIN=stable
+    export CARGO_TARGET_DIR=target
+    cargo build --frozen --release --bin nucleusflow
+}
+
+check() {
+    cd "$pkgname-$pkgver"
+    cargo test --frozen
+}
+
+package() {
+    cd "$pkgname-$pkgver"
+    make -f GNUmakefile DESTDIR="$pkgdir" PREFIX=/usr install
+    install -Dm644 LICENSE-APACHE "$pkgdir/usr/share/licenses/$pkgname/LICENSE-APACHE"
+    install -Dm644 LICENSE-MIT "$pkgdir/usr/share/licenses/$pkgname/LICENSE-MIT"
+}

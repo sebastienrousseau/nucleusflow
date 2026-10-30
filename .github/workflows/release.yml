@@ -116,9 +116,14 @@ jobs:
             target: aarch64-apple-darwin
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
+      - name: Install musl-tools
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
       # actions-rs/toolchain is archived and actionlint reports its runner
       # as too old to run; dtolnay/rust-toolchain is the maintained
       # equivalent and is what the rest of this workflow already uses.
@@ -135,22 +140,29 @@ jobs:
       - name: Build
         run: cargo build --verbose --release --target ${{ matrix.target }}
       - name: Package
+        if: matrix.os != 'windows-latest'
         run: |
-          if [ ! -d "target/package" ]; then
-            mkdir -p target/package
-          fi
-          cd target/${{ matrix.target }}/release
-          tar czf ../../package/${{ matrix.target }}.tar.gz -- *
+          STAGE_DIR="target/staging-${{ matrix.target }}"
+          mkdir -p "${STAGE_DIR}" target/package
+          cp "target/${{ matrix.target }}/release/nucleusflow" "${STAGE_DIR}/"
+          cp LICENSE-APACHE LICENSE-MIT README.md "${STAGE_DIR}/"
+          mkdir -p "${STAGE_DIR}/man/man1" "${STAGE_DIR}/completions"
+          cp share/man/man1/nucleusflow.1 "${STAGE_DIR}/man/man1/"
+          cp -r completions/* "${STAGE_DIR}/completions/"
+          tar czf "target/package/${{ matrix.target }}.tar.gz" -C "${STAGE_DIR}" .
         shell: bash
 
       - name: Package (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          if (!(Test-Path "target/package")) {
-            mkdir target/package
-          }
-          cd target/${{ matrix.target }}/release
-          tar -czf ../../package/${{ matrix.target }}.tar.gz *
+          $STAGE_DIR = "target/staging-${{ matrix.target }}"
+          New-Item -ItemType Directory -Force -Path $STAGE_DIR, "target/package"
+          Copy-Item "target/${{ matrix.target }}/release/nucleusflow.exe" "$STAGE_DIR/"
+          Copy-Item LICENSE-APACHE, LICENSE-MIT, README.md "$STAGE_DIR/"
+          New-Item -ItemType Directory -Force -Path "$STAGE_DIR/man/man1", "$STAGE_DIR/completions"
+          Copy-Item share/man/man1/nucleusflow.1 "$STAGE_DIR/man/man1/"
+          Copy-Item completions/* "$STAGE_DIR/completions/" -Recurse
+          tar -czf "target/package/${{ matrix.target }}.tar.gz" -C $STAGE_DIR .
         shell: pwsh
 
       - uses: actions/upload-artifact@v7
