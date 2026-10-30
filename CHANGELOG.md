@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated project logo asset URLs to CloudCDN (`https://cloudcdn.pro/clients/nucleusflow/v1/logos/nucleusflow.svg`) across documentation and rustdoc crate metadata.
+- Upgraded `parking_lot` dependency to `0.13.0`.
+- Updated GitHub Actions reusable CI pipeline workflow pinning to `83114142d0a14e9c6302a9ba9e716a0cc53e4e01`.
 
 ## [0.0.5] - 2026-10-30
 
