@@ -81,7 +81,7 @@ Add NucleusFlow to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-nucleusflow = "0.0.10"
+nucleusflow = "0.0.11"
 ```
 
 Or run:
