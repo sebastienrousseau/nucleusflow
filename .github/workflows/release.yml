@@ -39,7 +39,7 @@ jobs:
       published: ${{ steps.resolve.outputs.published }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Resolve version and publication state
         id: resolve
@@ -87,7 +87,7 @@ jobs:
     steps:
       - name: Authenticate with crates.io
         id: auth
-        uses: rust-lang/crates-io-auth-action@v1
+        uses: rust-lang/crates-io-auth-action@d6b091a10d7f9b30e4c05478289e94fb309882c5 # v1
 
       - name: Confirm a token was issued
         env:
@@ -120,17 +120,17 @@ jobs:
             target: x86_64-unknown-linux-musl
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Install musl-tools
         if: matrix.target == 'x86_64-unknown-linux-musl'
         run: sudo apt-get update && sudo apt-get install -y musl-tools
       # actions-rs/toolchain is archived and actionlint reports its runner
       # as too old to run; dtolnay/rust-toolchain is the maintained
       # equivalent and is what the rest of this workflow already uses.
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # stable
         with:
           targets: ${{ matrix.target }}
-      - uses: actions/cache@v6
+      - uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: |
             ~/.cargo/registry
@@ -165,7 +165,7 @@ jobs:
           tar -czf "target/package/${{ matrix.target }}.tar.gz" -C $STAGE_DIR .
         shell: pwsh
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           name: ${{ matrix.target }}
           path: target/package/${{ matrix.target }}.tar.gz
@@ -178,12 +178,12 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       # Version comes from the guard job, which has already checked it
       # against the tag being released.
       - name: Set version
         run: echo "VERSION=${{ needs.guard.outputs.version }}" >> "$GITHUB_ENV"
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           path: artifacts
       - name: Generate Changelog
@@ -223,11 +223,11 @@ jobs:
       # Mints the OIDC token crates.io exchanges for a publish token.
       id-token: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       # actions-rs/toolchain is archived and actionlint reports its runner
       # as too old to run; dtolnay/rust-toolchain is the maintained
       # equivalent.
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # stable
 
       # Trusted publishing: swaps this job's GitHub OIDC identity for a
       # temporary crates.io token, revoked by the action's post step when
@@ -235,7 +235,7 @@ jobs:
       # nucleusflow crate (repo + release.yml).
       - name: Authenticate with crates.io
         id: auth
-        uses: rust-lang/crates-io-auth-action@v1
+        uses: rust-lang/crates-io-auth-action@d6b091a10d7f9b30e4c05478289e94fb309882c5 # v1
 
       - name: Publish
         run: cargo publish

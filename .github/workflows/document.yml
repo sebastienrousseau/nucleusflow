@@ -11,22 +11,23 @@ on:
   release:
     types: [created]
 
-permissions:
-  contents: write
+permissions: read-all
 
 jobs:
   all:
     name: Document
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
-      - uses: hecrj/setup-rust-action@v2.0.1
-        with:
-          rust-version: nightly
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # nightly
 
-      - uses: actions/checkout@v7
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Generate documentation for all features and publish it
         run: |
@@ -36,7 +37,7 @@ jobs:
             echo '<html><head><meta http-equiv="refresh" content="0; url=/nucleusflow/"></head><body></body></html>' > ./target/doc/index.html
 
       - name: Deploy
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           name: documentation
           path: target/doc
@@ -47,7 +48,7 @@ jobs:
         run: echo 'doc.nucleusflow.com' > ./target/doc/CNAME
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4.1.0
+        uses: peaceiris/actions-gh-pages@47f197a2200bb9de68ba5f48fad1c088eb1c4a32 # v4.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./target/doc
