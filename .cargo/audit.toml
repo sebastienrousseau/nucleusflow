@@ -10,17 +10,22 @@ ignore = [
     # out-of-bounds reads in archives containing Rc/Arc.
     # Solution is rkyv >= 0.8.17, which is a semver-major bump.
     #
-    # Not fixable here. rkyv arrives only transitively, by three paths:
+    # Not fixable here. rkyv arrives only transitively, by one path:
     #
     #   minify-html 0.18.1 -> lightningcss 1.0.0-alpha.72
     #                      -> parcel_sourcemap 2.1.1 -> rkyv 0.7.46
-    #   staticdatagen -> sitemap-gen -> html-generator -> minify-html -> (same)
-    #   staticdatagen -> html-generator -> minify-html -> (same)
     #
-    # Every crate on those paths is already at its latest published
+    # Every crate on that path is already at its latest published
     # version, and none has migrated to rkyv 0.8. `cargo update` cannot
-    # cross the major boundary, and dropping minify-html would remove
-    # HTML minification while leaving the staticdatagen paths intact.
+    # cross the major boundary. lightningcss is not optional in
+    # minify-html, and html-minifier 5.0.2, the rkyv-free alternative,
+    # was measured against it: it keeps the newlines between tags and
+    # every optional tag, so its output was 7 to 55 percent larger on
+    # the four samples tried, and it turns test_minification's input
+    # into "<h1>\nTest\n</h1>" where the test expects "<h1>Test</h1>".
+    # Swapping would trade a real loss for an unreachable bug: rkyv
+    # is only read by SourceMap::from_buffer, which neither minify-html
+    # nor lightningcss calls.
     #
     # Reachability: nucleusflow never deserializes rkyv archives. rkyv is
     # an internal detail of parcel_sourcemap's source-map handling inside
