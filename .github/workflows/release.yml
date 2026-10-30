@@ -201,16 +201,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "v${VERSION}" \
-            --title "NucleusFlow ${VERSION}" \
-            --notes-file CHANGELOG.md
+          if ! gh release view "v${VERSION}" >/dev/null 2>&1; then
+            gh release create "v${VERSION}" \
+              --title "NucleusFlow ${VERSION}" \
+              --notes-file CHANGELOG.md
+          else
+            echo "Release v${VERSION} already exists. Proceeding to asset upload."
+          fi
       - name: Upload Release Assets
         run: |
           for asset in artifacts/*/*; do
-            gh release upload v${{ env.VERSION }} "$asset" --clobber
+            gh release upload "v${VERSION}" "$asset" --clobber
           done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   crate:
     name: Publish to Crates.io 🦀

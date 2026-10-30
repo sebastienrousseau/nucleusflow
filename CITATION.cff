@@ -9,7 +9,7 @@ authors:
 repository-code: "https://github.com/sebastienrousseau/nucleusflow"
 url: "https://nucleusflow.com"
 license: "Apache-2.0 OR MIT"
-version: 0.0.10
+version: 0.0.11
 date-released: "2026-10-30"
 abstract: >-
   A fast, flexible, and secure static site generator and content processing pipeline in Rust.
