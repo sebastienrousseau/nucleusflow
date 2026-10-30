@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: Apache-2.0 OR MIT -->
 
 <p align="center">
-  <img src="https://kura.pro/nucleusflow/images/logos/nucleusflow.svg" alt="NucleusFlow logo" width="128" />
+  <img src="https://cloudcdn.pro/clients/nucleusflow/v1/logos/nucleusflow.svg" alt="NucleusFlow logo" width="128" />
 </p>
 
 <h1 align="center">NucleusFlow</h1>
@@ -59,7 +59,7 @@
 
 ```toml
 [dependencies]
-nucleusflow = "0.0.5"
+nucleusflow = "0.0.6"
 ```
 
 Or install via Cargo:

@@ -1,5 +1,5 @@
 <!-- markdownlint-disable MD033 MD041 -->
-<img src="https://kura.pro/nucleusflow/images/logos/nucleusflow.svg"
+<img src="https://cloudcdn.pro/clients/nucleusflow/v1/logos/nucleusflow.svg"
 alt="NucleusFlow logo" height="66" align="right" />
 <!-- markdownlint-enable MD033 MD041 -->
 
