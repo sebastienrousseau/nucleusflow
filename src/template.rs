@@ -197,16 +197,20 @@ impl HandlebarsRenderer {
                     }
                 })?;
 
-                self.validate_template(&template_content).map_err(
-                    |e| ProcessingError::TemplateProcessing {
+                Self::validate_template_internal(
+                    &engine,
+                    &template_content,
+                )
+                .map_err(|e| {
+                    ProcessingError::TemplateProcessing {
                         details: format!(
                             "Template validation failed: {}",
                             e
                         ),
                         template_name: template_name.to_string(),
                         source: None,
-                    },
-                )?;
+                    }
+                })?;
 
                 engine
                     .register_template_string(
@@ -230,6 +234,25 @@ impl HandlebarsRenderer {
                 );
             }
         }
+
+        if !cache.contains_key("default") {
+            let default_template = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>{{#if title}}{{title}}{{else}}NucleusFlow{{/if}}</title>\n</head>\n<body>\n{{{content}}}\n</body>\n</html>";
+            engine
+                .register_template_string("default", default_template)
+                .map_err(|e| ProcessingError::TemplateProcessing {
+                    details: format!(
+                        "Failed to register default template: {}",
+                        e
+                    ),
+                    template_name: "default".to_string(),
+                    source: Some(Box::new(e)),
+                })?;
+            _ = cache.insert(
+                "default".to_string(),
+                default_template.to_string(),
+            );
+        }
+
         Ok(())
     }
 
@@ -266,8 +289,16 @@ impl HandlebarsRenderer {
     }
 
     /// Validates the template syntax to catch errors early.
-    fn validate_template(&self, template: &str) -> Result<()> {
+    pub fn validate_template(&self, template: &str) -> Result<()> {
         let engine = self.engine.read();
+        Self::validate_template_internal(&engine, template)
+    }
+
+    /// Internal helper validating template syntax against a given Handlebars engine.
+    fn validate_template_internal(
+        engine: &Handlebars,
+        template: &str,
+    ) -> Result<()> {
         _ = engine
             .render_template(template, &JsonValue::Null)
             .map_err(|e| ValidationError {
@@ -277,13 +308,12 @@ impl HandlebarsRenderer {
                 source: Some(template.to_string()),
             })?;
 
-        let mut brackets = Vec::new();
-        let mut in_tag = false;
+        let mut open_brackets = Vec::new();
 
         for (i, c) in template.chars().enumerate() {
             match c {
-                '{' if in_tag => brackets.push(('{', i)),
-                '}' if brackets.pop().is_none() => {
+                '{' => open_brackets.push(i),
+                '}' if open_brackets.pop().is_none() => {
                     return Err(ValidationError {
                         details: "Unmatched closing brace".to_string(),
                         line: None,
@@ -292,16 +322,15 @@ impl HandlebarsRenderer {
                     }
                     .into());
                 }
-                '{' => in_tag = true,
                 _ => {}
             }
         }
 
-        if !brackets.is_empty() {
+        if let Some(&first_open) = open_brackets.first() {
             return Err(ValidationError {
                 details: "Unmatched opening brace".to_string(),
                 line: None,
-                column: Some(brackets[0].1),
+                column: Some(first_open),
                 source: Some(template.to_string()),
             }
             .into());

@@ -85,11 +85,14 @@ const BLOCKED_ENV_VARS: &[&str] = &["PATH", "HOME", "USER", "SHELL"];
 /// - Staging: Moderate security for testing
 /// - Production: Maximum security with all protections enabled
 /// - Custom: User-defined security settings (requires careful configuration)
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize,
+)]
 #[serde(rename_all = "lowercase")]
 pub enum Profile {
     /// Development profile with settings optimized for debugging.
     /// Warning: Not for use in production environments.
+    #[default]
     Development,
 
     /// Staging profile for intermediate testing.
@@ -103,12 +106,6 @@ pub enum Profile {
     /// Custom profile enabling specific user configurations.
     /// Warning: Requires careful security review.
     Custom,
-}
-
-impl Default for Profile {
-    fn default() -> Self {
-        Profile::Development
-    }
 }
 
 /// Represents the main configuration structure encompassing all application settings.

@@ -299,13 +299,19 @@ impl NucleusFlow {
         }
     }
 
-    /// Processes content files, transforms, renders, and generates HTML output.
+    /// Processes content files, transforms, renders, and generates HTML output recursively.
     pub fn process(&self) -> Result<()> {
-        for entry in fs::read_dir(&self.config.content_dir)? {
+        self.process_dir(&self.config.content_dir)
+    }
+
+    fn process_dir(&self, dir: &Path) -> Result<()> {
+        for entry in fs::read_dir(dir)? {
             let entry = entry?;
             let path = entry.path();
 
-            if path.is_file() {
+            if path.is_dir() {
+                self.process_dir(&path)?;
+            } else if path.is_file() {
                 self.process_file(&path)?;
             }
         }

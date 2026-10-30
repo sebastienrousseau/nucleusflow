@@ -6,14 +6,13 @@
 //!
 //! ## Available Processors
 //!
-//! - [`markdown`]: Processes Markdown content with support for frontmatter and extensions
+//! - [`markdown`](crate::processors::markdown): Processes Markdown content with support for frontmatter and extensions
 //!
 //! ## Usage
 //!
 //! ```rust,no_run
 //! use nucleusflow::processors::markdown::MarkdownProcessor;
 //! use nucleusflow::core::traits::Processor;
-//! use nucleusflow::ContentProcessor;
 //!
 //! let processor = MarkdownProcessor::new()
 //!     .with_tables(true)
@@ -26,7 +25,7 @@
 //! ## Implementing Custom Processors
 //!
 //! Custom processors can be implemented by creating a new type that implements
-//! the [`Processor`] trait:
+//! the [`Processor`](crate::core::traits::Processor) trait:
 //!
 //! ```rust
 //! # use nucleusflow::core::traits::Processor;

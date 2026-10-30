@@ -137,7 +137,7 @@ jobs:
             mkdir -p target/package
           fi
           cd target/${{ matrix.target }}/release
-          tar czf ../../package/${{ matrix.target }}.tar.gz *
+          tar czf ../../package/${{ matrix.target }}.tar.gz -- *
         shell: bash
 
       - name: Package (Windows)
@@ -171,10 +171,12 @@ jobs:
           path: artifacts
       - name: Generate Changelog
         run: |
-          echo "## Release v${VERSION} - $(date +'%Y-%m-%d')" > CHANGELOG.md
-          cat TEMPLATE.md >> CHANGELOG.md
-          git log --pretty=format:'%s' --reverse HEAD >> CHANGELOG.md
-          echo "" >> CHANGELOG.md
+          {
+            echo "## Release v${VERSION} - $(date +'%Y-%m-%d')"
+            cat TEMPLATE.md
+            git log --pretty=format:'%s' --reverse HEAD
+            echo ""
+          } > CHANGELOG.md
       # gh is preinstalled on the runner, so this replaces the archived
       # actions/create-release@v1 without adding a third-party dependency.
       - name: Create draft release
@@ -182,7 +184,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "v${VERSION}" \
-            --title "NucleusFlow 🦀 v${VERSION}" \
+            --title "NucleusFlow ${VERSION}" \
             --notes-file CHANGELOG.md \
             --draft
       - name: Upload Release Assets

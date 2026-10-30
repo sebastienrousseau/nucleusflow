@@ -4,12 +4,12 @@
 //!
 //! ## Key Traits
 //!
-//! - [`Processor`]: Core trait for content processing implementations
-//! - [`Transform`]: Trait for content transformation operations
-//! - [`Generator`]: Trait for output generation
-//! - [`Validator`]: Trait for content validation
-//! - [`ProcessingContext`]: Trait for converting types into a processing context
-//! - [`Shareable`]: Trait for wrapping types in a shareable, thread-safe container
+//! - [`Processor`](crate::core::traits::Processor): Core trait for content processing implementations
+//! - [`Transform`](crate::core::traits::Transform): Trait for content transformation operations
+//! - [`Generator`](crate::core::traits::Generator): Trait for output generation
+//! - [`Validator`](crate::core::traits::Validator): Trait for content validation
+//! - [`ProcessingContext`](crate::core::traits::ProcessingContext): Trait for converting types into a processing context
+//! - [`Shareable`](crate::core::traits::Shareable): Trait for wrapping types in a shareable, thread-safe container
 //!
 //! ## Design Principles
 //!

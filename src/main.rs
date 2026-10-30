@@ -33,8 +33,8 @@ use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use log::{debug, error, info, warn};
 use nucleusflow::{
-    FileContentProcessor, HtmlOutputGenerator, HtmlTemplateRenderer,
-    NucleusFlow, NucleusFlowConfig,
+    generators::html::HtmlGenerator, processors::MarkdownProcessor,
+    template::HandlebarsRenderer, NucleusFlow, NucleusFlowConfig,
 };
 use std::{
     env,
@@ -191,6 +191,11 @@ fn create_project_structure(
         ))?;
     }
 
+    let site_name = project_dir
+        .file_name()
+        .and_then(|s| s.to_str())
+        .unwrap_or("New NucleusFlow Site");
+
     // Create initial config file
     let config_content = format!(
         r#"[site]
@@ -203,6 +208,22 @@ template = "{}"
     let config_path = project_dir.join("config").join("config.toml");
     std::fs::write(&config_path, config_content)
         .context("Failed to write config file")?;
+
+    // Create starter content
+    let content_file = project_dir.join("content").join("index.md");
+    let content_body = format!(
+        "---\ntitle: {}\ntags: [static, rust, nucleusflow]\n---\n\n# {}\n\nA fast, modern static site generated with NucleusFlow.\n",
+        site_name, site_name
+    );
+    std::fs::write(&content_file, content_body)
+        .context("Failed to write starter content file")?;
+
+    // Create default template
+    let template_file =
+        project_dir.join("templates").join("default.hbs");
+    let template_body = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>{{#if title}}{{title}}{{else}}NucleusFlow{{/if}}</title>\n</head>\n<body>\n    <main>\n        {{{content}}}\n    </main>\n</body>\n</html>\n";
+    std::fs::write(&template_file, template_body)
+        .context("Failed to write default template file")?;
 
     // Copy template files if they exist
     if let Err(e) = copy_template_files(project_dir, template) {
@@ -255,9 +276,14 @@ fn handle_build(
     )
     .context("Failed to create NucleusFlow configuration")?;
 
-    let content_processor = FileContentProcessor::new(content_dir);
-    let template_renderer = HtmlTemplateRenderer::new(template_dir);
-    let output_generator = HtmlOutputGenerator::new(output_dir);
+    let content_processor = MarkdownProcessor::new()
+        .with_tables(true)
+        .with_footnotes(true)
+        .with_strikethrough(true);
+    let template_renderer = HandlebarsRenderer::new(&template_dir)
+        .context("Failed to initialize Handlebars template renderer")?;
+    let output_generator =
+        HtmlGenerator::new().with_minification(minify);
 
     let nucleus = NucleusFlow::new(
         config,
@@ -275,7 +301,7 @@ fn handle_build(
 /// Starts the development server.
 fn handle_serve(port: u16, watch: bool, dir: PathBuf) -> Result<()> {
     info!(
-        "Starting development server on port {} (watch mode: {})",
+        "Starting development server on http://127.0.0.1:{} (watch mode: {})",
         port, watch
     );
     info!("Serving directory: {:?}", dir);
@@ -287,9 +313,94 @@ fn handle_serve(port: u16, watch: bool, dir: PathBuf) -> Result<()> {
         ));
     }
 
-    // Implement development server logic here
-    // This is a placeholder for now
-    info!("Development server functionality not yet implemented");
+    let listener = std::net::TcpListener::bind(("127.0.0.1", port))
+        .context(format!("Failed to bind to 127.0.0.1:{}", port))?;
+
+    info!("Server listening on http://127.0.0.1:{}/", port);
+
+    for stream in listener.incoming() {
+        match stream {
+            Ok(stream) => {
+                if let Err(e) = serve_connection(stream, &dir) {
+                    debug!("Connection error: {}", e);
+                }
+            }
+            Err(e) => {
+                warn!("Incoming connection failed: {}", e);
+            }
+        }
+    }
+
+    Ok(())
+}
+
+/// Serves a single HTTP connection.
+fn serve_connection(
+    mut stream: std::net::TcpStream,
+    dir: &Path,
+) -> std::io::Result<()> {
+    use std::io::{BufRead, BufReader, Write};
+
+    let mut reader = BufReader::new(&stream);
+    let mut request_line = String::new();
+    let _ = reader.read_line(&mut request_line)?;
+
+    let parts: Vec<&str> = request_line.split_whitespace().collect();
+    if parts.len() < 2 || parts[0] != "GET" {
+        let response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\n\r\n";
+        stream.write_all(response.as_bytes())?;
+        return Ok(());
+    }
+
+    let raw_path = parts[1].split('?').next().unwrap_or("/");
+    let sanitized_rel = raw_path.trim_start_matches('/');
+    let candidate =
+        if sanitized_rel.is_empty() || sanitized_rel.ends_with('/') {
+            dir.join(sanitized_rel).join("index.html")
+        } else {
+            let p = dir.join(sanitized_rel);
+            if p.is_dir() {
+                p.join("index.html")
+            } else {
+                p
+            }
+        };
+
+    if candidate.exists() && candidate.is_file() {
+        let content = std::fs::read(&candidate)?;
+        let mime = match candidate.extension().and_then(|s| s.to_str())
+        {
+            Some("html" | "htm") => "text/html; charset=utf-8",
+            Some("css") => "text/css; charset=utf-8",
+            Some("js") => "application/javascript",
+            Some("json") => "application/json",
+            Some("png") => "image/png",
+            Some("jpg" | "jpeg") => "image/jpeg",
+            Some("gif") => "image/gif",
+            Some("svg") => "image/svg+xml",
+            Some("ico") => "image/x-icon",
+            Some("txt") => "text/plain; charset=utf-8",
+            _ => "application/octet-stream",
+        };
+
+        let header = format!(
+            "HTTP/1.1 200 OK\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+            mime,
+            content.len()
+        );
+        stream.write_all(header.as_bytes())?;
+        stream.write_all(&content)?;
+    } else {
+        let body = b"<h1>404 Not Found</h1>";
+        let header = format!(
+            "HTTP/1.1 404 Not Found\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+            body.len()
+        );
+        stream.write_all(header.as_bytes())?;
+        stream.write_all(body)?;
+    }
+
+    stream.flush()?;
     Ok(())
 }
 
@@ -425,5 +536,35 @@ template = "blog"
                 verbosity
             );
         }
+    }
+
+    #[test]
+    fn test_build_site_integration() -> Result<()> {
+        init_test_logger();
+
+        let temp_dir = TempDir::new()?;
+        let project_path = temp_dir.path().join("integration-site");
+        create_project_structure(&project_path, "blog")?;
+
+        let content_dir = project_path.join("content");
+        let output_dir = project_path.join("public");
+        let template_dir = project_path.join("templates");
+        let config_path = project_path.join("config/config.toml");
+
+        handle_build(
+            content_dir,
+            output_dir.clone(),
+            template_dir,
+            false,
+            config_path,
+        )?;
+
+        let output_file = output_dir.join("index.html");
+        assert!(output_file.exists());
+        let html = std::fs::read_to_string(output_file)?;
+        assert!(html.contains("<!DOCTYPE html>"));
+        assert!(html.contains("integration-site"));
+
+        Ok(())
     }
 }
