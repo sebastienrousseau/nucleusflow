@@ -600,6 +600,7 @@ template = "blog"
             handle_new_at(temp_dir.path(), "invalid!", "blog").is_err()
         );
         assert!(handle_new_at(temp_dir.path(), "", "blog").is_err());
+        assert!(handle_new("-invalid", "blog").is_err());
         Ok(())
     }
 
@@ -803,6 +804,39 @@ template = "blog"
     }
 
     #[test]
+    fn test_serve_connection_loopback() -> Result<()> {
+        use std::io::{Read, Write};
+
+        let temp_dir = TempDir::new()?;
+        let doc_root = temp_dir.path().to_path_buf();
+        std::fs::write(
+            doc_root.join("index.html"),
+            "<h1>Loopback OK</h1>",
+        )?;
+
+        let listener = std::net::TcpListener::bind(("127.0.0.1", 0))?;
+        let addr = listener.local_addr()?;
+
+        let handle = std::thread::spawn(move || {
+            if let Ok((stream, _)) = listener.accept() {
+                let _ = serve_connection(stream, &doc_root);
+            }
+        });
+
+        let mut client = std::net::TcpStream::connect(addr)?;
+        client.write_all(b"GET / HTTP/1.1\r\n\r\n")?;
+        let mut response = String::new();
+        let _ = client.read_to_string(&mut response)?;
+        handle
+            .join()
+            .map_err(|_| anyhow::anyhow!("Thread join failed"))?;
+
+        assert!(response.starts_with("HTTP/1.1 200 OK"));
+        assert!(response.contains("<h1>Loopback OK</h1>"));
+        Ok(())
+    }
+
+    #[test]
     fn test_execute_command() -> Result<()> {
         let temp_dir = TempDir::new()?;
         let project_dir = temp_dir.path().join("cmd-site");
@@ -816,6 +850,12 @@ template = "blog"
             config: project_dir.join("config/config.toml"),
         };
         assert!(execute_command(build_cmd).is_ok());
+
+        let new_err = Commands::New {
+            name: "-invalid".to_string(),
+            template: "blog".to_string(),
+        };
+        assert!(execute_command(new_err).is_err());
 
         let serve_err = Commands::Serve {
             port: 19999,
