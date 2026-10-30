@@ -13,7 +13,6 @@
 //! ```rust,no_run
 //! use nucleusflow::processors::markdown::MarkdownProcessor;
 //! use nucleusflow::core::traits::Processor;
-//! use nucleusflow::ContentProcessor;
 //!
 //! let processor = MarkdownProcessor::new()
 //!     .with_tables(true)

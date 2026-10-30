@@ -42,6 +42,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Cargo.lock`), clearing RUSTSEC-2026-0414 (exponential event growth
   with `ENABLE_WIKILINKS` in `0.13.4`).
 - `noyalib` is updated from `0.0.57` to `0.0.58`.
+- The CLI build pipeline wires `MarkdownProcessor`, `HandlebarsRenderer`,
+  and `HtmlGenerator`, executing full markdown-to-HTML generation with
+  built-in default templating.
+- `NucleusFlow::process` processes content directories recursively.
+- `nucleusflow serve` implements an embedded HTTP static file server.
+- `nucleusflow new` scaffolds starter markdown content and default
+  Handlebars templates.
+- Resolved an `RwLock` reentrancy deadlock during Handlebars template
+  loading and fixed brace validation for raw `{{{...}}}` expressions.
+- `build.rs` asserts Rust 1.89.0 MSRV and names `nucleusflow`.
+- `.github/workflows/release.yml` conforms to the canonical GitHub
+  release title specification `NucleusFlow ${VERSION}`.
 
 ## [0.0.2] - 2026-10-11
 

@@ -184,7 +184,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "v${VERSION}" \
-            --title "NucleusFlow 🦀 v${VERSION}" \
+            --title "NucleusFlow ${VERSION}" \
             --notes-file CHANGELOG.md \
             --draft
       - name: Upload Release Assets

@@ -427,7 +427,7 @@ impl MarkdownProcessor {
     }
 
     /// Validates that the content is safe to process.
-    fn validate(&self, content: &str) -> Result<()> {
+    pub fn validate(&self, content: &str) -> Result<()> {
         // Check content size
         if content.len() > MAX_CONTENT_SIZE {
             return Err(ProcessingError::ContentProcessing {
@@ -534,6 +534,20 @@ impl Processor for MarkdownProcessor {
         } else {
             Ok(processed)
         }
+    }
+}
+
+impl crate::ContentProcessor for MarkdownProcessor {
+    fn process(
+        &self,
+        content: &str,
+        context: Option<&serde_json::Value>,
+    ) -> Result<String> {
+        Processor::process(self, content.to_string(), context)
+    }
+
+    fn validate(&self, content: &str) -> Result<()> {
+        self.validate(content)
     }
 }
 
