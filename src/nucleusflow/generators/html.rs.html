@@ -1130,5 +1130,64 @@
 <a href=#1130 id=1130 data-nosnippet>1130</a>
 <a href=#1131 id=1131 data-nosnippet>1131</a>        <span class="prelude-val">Ok</span>(())
 <a href=#1132 id=1132 data-nosnippet>1132</a>    }
-<a href=#1133 id=1133 data-nosnippet>1133</a>}
+<a href=#1133 id=1133 data-nosnippet>1133</a>
+<a href=#1134 id=1134 data-nosnippet>1134</a>    <span class="attr">#[test]
+<a href=#1135 id=1135 data-nosnippet>1135</a>    </span><span class="kw">fn </span>test_html_generator_auxiliary_and_coverage() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+<a href=#1136 id=1136 data-nosnippet>1136</a>        <span class="kw">let </span>temp_dir = TempDir::new()<span class="question-mark">?</span>;
+<a href=#1137 id=1137 data-nosnippet>1137</a>
+<a href=#1138 id=1138 data-nosnippet>1138</a>        <span class="comment">// Default and Debug
+<a href=#1139 id=1139 data-nosnippet>1139</a>        </span><span class="kw">let </span>default_gen = HtmlGenerator::default();
+<a href=#1140 id=1140 data-nosnippet>1140</a>        <span class="kw">let </span>debug_str = <span class="macro">format!</span>(<span class="string">"{:?}"</span>, default_gen);
+<a href=#1141 id=1141 data-nosnippet>1141</a>        <span class="macro">assert!</span>(debug_str.contains(<span class="string">"HtmlGenerator"</span>));
+<a href=#1142 id=1142 data-nosnippet>1142</a>
+<a href=#1143 id=1143 data-nosnippet>1143</a>        <span class="comment">// get_config
+<a href=#1144 id=1144 data-nosnippet>1144</a>        </span><span class="kw">let </span>config = default_gen.get_config();
+<a href=#1145 id=1145 data-nosnippet>1145</a>        <span class="macro">assert!</span>(!config.minify);
+<a href=#1146 id=1146 data-nosnippet>1146</a>
+<a href=#1147 id=1147 data-nosnippet>1147</a>        <span class="comment">// get_cached_assets
+<a href=#1148 id=1148 data-nosnippet>1148</a>        </span><span class="kw">let </span>cached = default_gen.get_cached_assets();
+<a href=#1149 id=1149 data-nosnippet>1149</a>        <span class="macro">assert!</span>(cached.is_empty());
+<a href=#1150 id=1150 data-nosnippet>1150</a>
+<a href=#1151 id=1151 data-nosnippet>1151</a>        <span class="comment">// with_asset_dir non-existent directory
+<a href=#1152 id=1152 data-nosnippet>1152</a>        </span><span class="kw">let </span>bad_path = temp_dir.path().join(<span class="string">"does_not_exist"</span>);
+<a href=#1153 id=1153 data-nosnippet>1153</a>        <span class="macro">assert!</span>(HtmlGenerator::new()
+<a href=#1154 id=1154 data-nosnippet>1154</a>            .with_asset_dir(<span class="kw-2">&amp;</span>bad_path)
+<a href=#1155 id=1155 data-nosnippet>1155</a>            .is_err());
+<a href=#1156 id=1156 data-nosnippet>1156</a>
+<a href=#1157 id=1157 data-nosnippet>1157</a>        <span class="comment">// process_html error on invalid HTML
+<a href=#1158 id=1158 data-nosnippet>1158</a>        </span><span class="kw">let </span>output_path = temp_dir.path().join(<span class="string">"invalid.html"</span>);
+<a href=#1159 id=1159 data-nosnippet>1159</a>        <span class="macro">assert!</span>(default_gen
+<a href=#1160 id=1160 data-nosnippet>1160</a>            .generate(<span class="string">"&lt;div&gt;Unclosed tag"</span>, <span class="kw-2">&amp;</span>output_path, <span class="prelude-val">None</span>)
+<a href=#1161 id=1161 data-nosnippet>1161</a>            .is_err());
+<a href=#1162 id=1162 data-nosnippet>1162</a>
+<a href=#1163 id=1163 data-nosnippet>1163</a>        <span class="comment">// with_minification(false) and with_pretty_print(false)
+<a href=#1164 id=1164 data-nosnippet>1164</a>        </span><span class="kw">let </span>raw_gen = HtmlGenerator::new()
+<a href=#1165 id=1165 data-nosnippet>1165</a>            .with_minification(<span class="bool-val">false</span>)
+<a href=#1166 id=1166 data-nosnippet>1166</a>            .with_pretty_print(<span class="bool-val">false</span>);
+<a href=#1167 id=1167 data-nosnippet>1167</a>        <span class="kw">let </span>raw_output = temp_dir.path().join(<span class="string">"raw.html"</span>);
+<a href=#1168 id=1168 data-nosnippet>1168</a>        raw_gen.generate(
+<a href=#1169 id=1169 data-nosnippet>1169</a>            <span class="string">"&lt;div&gt;Raw content&lt;/div&gt;"</span>,
+<a href=#1170 id=1170 data-nosnippet>1170</a>            <span class="kw-2">&amp;</span>raw_output,
+<a href=#1171 id=1171 data-nosnippet>1171</a>            <span class="prelude-val">None</span>,
+<a href=#1172 id=1172 data-nosnippet>1172</a>        )<span class="question-mark">?</span>;
+<a href=#1173 id=1173 data-nosnippet>1173</a>        <span class="macro">assert_eq!</span>(
+<a href=#1174 id=1174 data-nosnippet>1174</a>            fs::read_to_string(raw_output)<span class="question-mark">?</span>.trim(),
+<a href=#1175 id=1175 data-nosnippet>1175</a>            <span class="string">"&lt;div&gt;Raw content&lt;/div&gt;"
+<a href=#1176 id=1176 data-nosnippet>1176</a>        </span>);
+<a href=#1177 id=1177 data-nosnippet>1177</a>
+<a href=#1178 id=1178 data-nosnippet>1178</a>        <span class="comment">// update_metadata on file without head
+<a href=#1179 id=1179 data-nosnippet>1179</a>        </span><span class="kw">let </span>no_head_path = temp_dir.path().join(<span class="string">"no_head.html"</span>);
+<a href=#1180 id=1180 data-nosnippet>1180</a>        fs::write(<span class="kw-2">&amp;</span>no_head_path, <span class="string">"&lt;div&gt;Simple&lt;/div&gt;"</span>)<span class="question-mark">?</span>;
+<a href=#1181 id=1181 data-nosnippet>1181</a>        default_gen.update_metadata(
+<a href=#1182 id=1182 data-nosnippet>1182</a>            <span class="kw-2">&amp;</span>no_head_path,
+<a href=#1183 id=1183 data-nosnippet>1183</a>            <span class="macro">json!</span>({<span class="string">"author"</span>: <span class="string">"test"</span>}),
+<a href=#1184 id=1184 data-nosnippet>1184</a>        )<span class="question-mark">?</span>;
+<a href=#1185 id=1185 data-nosnippet>1185</a>        <span class="kw">let </span>updated = fs::read_to_string(no_head_path)<span class="question-mark">?</span>;
+<a href=#1186 id=1186 data-nosnippet>1186</a>        <span class="macro">assert!</span>(
+<a href=#1187 id=1187 data-nosnippet>1187</a>            updated.contains(<span class="string">r#"&lt;meta name="author" content="test"&gt;"#</span>)
+<a href=#1188 id=1188 data-nosnippet>1188</a>        );
+<a href=#1189 id=1189 data-nosnippet>1189</a>
+<a href=#1190 id=1190 data-nosnippet>1190</a>        <span class="prelude-val">Ok</span>(())
+<a href=#1191 id=1191 data-nosnippet>1191</a>    }
+<a href=#1192 id=1192 data-nosnippet>1192</a>}
 </code></pre></div></section></main></body></html>

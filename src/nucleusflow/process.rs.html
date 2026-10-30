@@ -100,37 +100,57 @@
 <a href=#100 id=100 data-nosnippet>100</a>    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 <a href=#101 id=101 data-nosnippet>101</a>
 <a href=#102 id=102 data-nosnippet>102</a>    <span class="attr">#[test]
-<a href=#103 id=103 data-nosnippet>103</a>    </span><span class="kw">fn </span>test_read_content() {
-<a href=#104 id=104 data-nosnippet>104</a>        <span class="kw">let </span>result = read_content(<span class="string">"test_file.txt"</span>);
-<a href=#105 id=105 data-nosnippet>105</a>        <span class="macro">assert!</span>(
-<a href=#106 id=106 data-nosnippet>106</a>            result.is_ok()
-<a href=#107 id=107 data-nosnippet>107</a>                || <span class="macro">matches!</span>(result, <span class="prelude-val">Err</span>(ProcessError::InvalidPath(<span class="kw">_</span>)))
-<a href=#108 id=108 data-nosnippet>108</a>        );
-<a href=#109 id=109 data-nosnippet>109</a>    }
+<a href=#103 id=103 data-nosnippet>103</a>    </span><span class="kw">fn </span>test_read_and_write_content() {
+<a href=#104 id=104 data-nosnippet>104</a>        <span class="kw">let </span>temp_dir = tempfile::tempdir().unwrap();
+<a href=#105 id=105 data-nosnippet>105</a>        <span class="kw">let </span>file_path = temp_dir.path().join(<span class="string">"test_file.txt"</span>);
+<a href=#106 id=106 data-nosnippet>106</a>
+<a href=#107 id=107 data-nosnippet>107</a>        <span class="comment">// Missing file
+<a href=#108 id=108 data-nosnippet>108</a>        </span><span class="kw">let </span>missing = read_content(<span class="kw-2">&amp;</span>file_path);
+<a href=#109 id=109 data-nosnippet>109</a>        <span class="macro">assert!</span>(<span class="macro">matches!</span>(missing, <span class="prelude-val">Err</span>(ProcessError::InvalidPath(<span class="kw">_</span>))));
 <a href=#110 id=110 data-nosnippet>110</a>
-<a href=#111 id=111 data-nosnippet>111</a>    <span class="attr">#[test]
-<a href=#112 id=112 data-nosnippet>112</a>    </span><span class="kw">fn </span>test_write_content() {
-<a href=#113 id=113 data-nosnippet>113</a>        <span class="kw">let </span>file_path = <span class="string">"test_output.txt"</span>;
-<a href=#114 id=114 data-nosnippet>114</a>
-<a href=#115 id=115 data-nosnippet>115</a>        <span class="comment">// Run the test
-<a href=#116 id=116 data-nosnippet>116</a>        </span><span class="kw">let </span>result = write_content(file_path, <span class="string">"Sample content"</span>);
-<a href=#117 id=117 data-nosnippet>117</a>        <span class="macro">assert!</span>(
-<a href=#118 id=118 data-nosnippet>118</a>            result.is_ok()
-<a href=#119 id=119 data-nosnippet>119</a>                || <span class="macro">matches!</span>(result, <span class="prelude-val">Err</span>(ProcessError::WriteError(<span class="kw">_</span>)))
-<a href=#120 id=120 data-nosnippet>120</a>        );
-<a href=#121 id=121 data-nosnippet>121</a>
-<a href=#122 id=122 data-nosnippet>122</a>        <span class="comment">// Cleanup: remove the test file if it was created
-<a href=#123 id=123 data-nosnippet>123</a>        </span><span class="kw">if </span>Path::new(file_path).exists() {
-<a href=#124 id=124 data-nosnippet>124</a>            std::fs::remove_file(file_path)
-<a href=#125 id=125 data-nosnippet>125</a>                .expect(<span class="string">"Failed to delete test output file"</span>);
-<a href=#126 id=126 data-nosnippet>126</a>        }
-<a href=#127 id=127 data-nosnippet>127</a>    }
-<a href=#128 id=128 data-nosnippet>128</a>
-<a href=#129 id=129 data-nosnippet>129</a>    <span class="attr">#[test]
-<a href=#130 id=130 data-nosnippet>130</a>    </span><span class="kw">fn </span>test_process_content() {
-<a href=#131 id=131 data-nosnippet>131</a>        <span class="kw">let </span>transform_fn = |s: <span class="kw-2">&amp;</span>str| <span class="prelude-val">Ok</span>(s.to_uppercase());
-<a href=#132 id=132 data-nosnippet>132</a>        <span class="kw">let </span>result = process_content(<span class="string">"test content"</span>, transform_fn);
-<a href=#133 id=133 data-nosnippet>133</a>        <span class="macro">assert_eq!</span>(result.unwrap(), <span class="string">"TEST CONTENT"</span>);
-<a href=#134 id=134 data-nosnippet>134</a>    }
-<a href=#135 id=135 data-nosnippet>135</a>}
+<a href=#111 id=111 data-nosnippet>111</a>        <span class="comment">// Write content
+<a href=#112 id=112 data-nosnippet>112</a>        </span><span class="macro">assert!</span>(write_content(<span class="kw-2">&amp;</span>file_path, <span class="string">"Sample content"</span>).is_ok());
+<a href=#113 id=113 data-nosnippet>113</a>
+<a href=#114 id=114 data-nosnippet>114</a>        <span class="comment">// Read content
+<a href=#115 id=115 data-nosnippet>115</a>        </span><span class="kw">let </span>read = read_content(<span class="kw-2">&amp;</span>file_path).unwrap();
+<a href=#116 id=116 data-nosnippet>116</a>        <span class="macro">assert_eq!</span>(read, <span class="string">"Sample content"</span>);
+<a href=#117 id=117 data-nosnippet>117</a>    }
+<a href=#118 id=118 data-nosnippet>118</a>
+<a href=#119 id=119 data-nosnippet>119</a>    <span class="attr">#[test]
+<a href=#120 id=120 data-nosnippet>120</a>    </span><span class="kw">fn </span>test_process_content_success_and_error() {
+<a href=#121 id=121 data-nosnippet>121</a>        <span class="kw">let </span>transform_fn = |s: <span class="kw-2">&amp;</span>str| <span class="prelude-val">Ok</span>(s.to_uppercase());
+<a href=#122 id=122 data-nosnippet>122</a>        <span class="kw">let </span>result = process_content(<span class="string">"test content"</span>, transform_fn);
+<a href=#123 id=123 data-nosnippet>123</a>        <span class="macro">assert_eq!</span>(result.unwrap(), <span class="string">"TEST CONTENT"</span>);
+<a href=#124 id=124 data-nosnippet>124</a>
+<a href=#125 id=125 data-nosnippet>125</a>        <span class="kw">let </span>failing_fn =
+<a href=#126 id=126 data-nosnippet>126</a>            |_s: <span class="kw-2">&amp;</span>str| <span class="prelude-val">Err</span>(<span class="string">"custom transform failure"</span>.to_string());
+<a href=#127 id=127 data-nosnippet>127</a>        <span class="kw">let </span>err_result = process_content(<span class="string">"input"</span>, failing_fn);
+<a href=#128 id=128 data-nosnippet>128</a>        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
+<a href=#129 id=129 data-nosnippet>129</a>            err_result,
+<a href=#130 id=130 data-nosnippet>130</a>            <span class="prelude-val">Err</span>(ProcessError::ContentError(<span class="kw">_</span>))
+<a href=#131 id=131 data-nosnippet>131</a>        ));
+<a href=#132 id=132 data-nosnippet>132</a>    }
+<a href=#133 id=133 data-nosnippet>133</a>
+<a href=#134 id=134 data-nosnippet>134</a>    <span class="attr">#[test]
+<a href=#135 id=135 data-nosnippet>135</a>    </span><span class="kw">fn </span>test_process_error_display() {
+<a href=#136 id=136 data-nosnippet>136</a>        <span class="kw">let </span>io_err =
+<a href=#137 id=137 data-nosnippet>137</a>            io::Error::new(io::ErrorKind::NotFound, <span class="string">"file not found"</span>);
+<a href=#138 id=138 data-nosnippet>138</a>        <span class="kw">let </span>read_err = ProcessError::ReadError(io_err);
+<a href=#139 id=139 data-nosnippet>139</a>        <span class="macro">assert!</span>(<span class="macro">format!</span>(<span class="string">"{}"</span>, read_err).contains(<span class="string">"Failed to read file"</span>));
+<a href=#140 id=140 data-nosnippet>140</a>
+<a href=#141 id=141 data-nosnippet>141</a>        <span class="kw">let </span>write_io_err =
+<a href=#142 id=142 data-nosnippet>142</a>            io::Error::new(io::ErrorKind::PermissionDenied, <span class="string">"denied"</span>);
+<a href=#143 id=143 data-nosnippet>143</a>        <span class="kw">let </span>write_err = ProcessError::WriteError(write_io_err);
+<a href=#144 id=144 data-nosnippet>144</a>        <span class="macro">assert!</span>(<span class="macro">format!</span>(<span class="string">"{}"</span>, write_err)
+<a href=#145 id=145 data-nosnippet>145</a>            .contains(<span class="string">"Failed to write to file"</span>));
+<a href=#146 id=146 data-nosnippet>146</a>
+<a href=#147 id=147 data-nosnippet>147</a>        <span class="kw">let </span>content_err =
+<a href=#148 id=148 data-nosnippet>148</a>            ProcessError::ContentError(<span class="string">"bad content"</span>.into());
+<a href=#149 id=149 data-nosnippet>149</a>        <span class="macro">assert!</span>(<span class="macro">format!</span>(<span class="string">"{}"</span>, content_err)
+<a href=#150 id=150 data-nosnippet>150</a>            .contains(<span class="string">"Failed to process content"</span>));
+<a href=#151 id=151 data-nosnippet>151</a>
+<a href=#152 id=152 data-nosnippet>152</a>        <span class="kw">let </span>path_err = ProcessError::InvalidPath(<span class="string">"bad path"</span>.into());
+<a href=#153 id=153 data-nosnippet>153</a>        <span class="macro">assert!</span>(<span class="macro">format!</span>(<span class="string">"{}"</span>, path_err).contains(<span class="string">"Invalid path"</span>));
+<a href=#154 id=154 data-nosnippet>154</a>    }
+<a href=#155 id=155 data-nosnippet>155</a>}
 </code></pre></div></section></main></body></html>

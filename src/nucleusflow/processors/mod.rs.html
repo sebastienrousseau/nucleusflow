@@ -119,16 +119,21 @@
 <a href=#119 id=119 data-nosnippet>119</a>        <span class="macro">assert!</span>(config.validate);
 <a href=#120 id=120 data-nosnippet>120</a>        <span class="macro">assert!</span>(config.sanitize);
 <a href=#121 id=121 data-nosnippet>121</a>        <span class="macro">assert!</span>(config.options.is_empty());
-<a href=#122 id=122 data-nosnippet>122</a>    }
-<a href=#123 id=123 data-nosnippet>123</a>
-<a href=#124 id=124 data-nosnippet>124</a>    <span class="attr">#[test]
-<a href=#125 id=125 data-nosnippet>125</a>    </span><span class="kw">fn </span>test_content_metadata_defaults() {
-<a href=#126 id=126 data-nosnippet>126</a>        <span class="kw">let </span>metadata = ContentMetadata::default();
-<a href=#127 id=127 data-nosnippet>127</a>        <span class="macro">assert!</span>(metadata.title.is_none());
-<a href=#128 id=128 data-nosnippet>128</a>        <span class="macro">assert!</span>(metadata.description.is_none());
-<a href=#129 id=129 data-nosnippet>129</a>        <span class="macro">assert!</span>(metadata.date.is_none());
-<a href=#130 id=130 data-nosnippet>130</a>        <span class="macro">assert!</span>(metadata.tags.is_empty());
-<a href=#131 id=131 data-nosnippet>131</a>        <span class="macro">assert!</span>(metadata.custom.is_empty());
-<a href=#132 id=132 data-nosnippet>132</a>    }
-<a href=#133 id=133 data-nosnippet>133</a>}
+<a href=#122 id=122 data-nosnippet>122</a>
+<a href=#123 id=123 data-nosnippet>123</a>        <span class="kw">let </span>deserialized: ProcessorConfig =
+<a href=#124 id=124 data-nosnippet>124</a>            serde_json::from_str(<span class="string">"{}"</span>).unwrap();
+<a href=#125 id=125 data-nosnippet>125</a>        <span class="macro">assert!</span>(deserialized.validate);
+<a href=#126 id=126 data-nosnippet>126</a>        <span class="macro">assert!</span>(deserialized.sanitize);
+<a href=#127 id=127 data-nosnippet>127</a>    }
+<a href=#128 id=128 data-nosnippet>128</a>
+<a href=#129 id=129 data-nosnippet>129</a>    <span class="attr">#[test]
+<a href=#130 id=130 data-nosnippet>130</a>    </span><span class="kw">fn </span>test_content_metadata_defaults() {
+<a href=#131 id=131 data-nosnippet>131</a>        <span class="kw">let </span>metadata = ContentMetadata::default();
+<a href=#132 id=132 data-nosnippet>132</a>        <span class="macro">assert!</span>(metadata.title.is_none());
+<a href=#133 id=133 data-nosnippet>133</a>        <span class="macro">assert!</span>(metadata.description.is_none());
+<a href=#134 id=134 data-nosnippet>134</a>        <span class="macro">assert!</span>(metadata.date.is_none());
+<a href=#135 id=135 data-nosnippet>135</a>        <span class="macro">assert!</span>(metadata.tags.is_empty());
+<a href=#136 id=136 data-nosnippet>136</a>        <span class="macro">assert!</span>(metadata.custom.is_empty());
+<a href=#137 id=137 data-nosnippet>137</a>    }
+<a href=#138 id=138 data-nosnippet>138</a>}
 </code></pre></div></section></main></body></html>
