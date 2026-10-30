@@ -18,9 +18,11 @@
 )]
 #![crate_name = "nucleusflow"]
 #![crate_type = "lib"]
+#![forbid(unsafe_code)]
 
+pub use crate::core::config::ConfigBuilder;
 use crate::core::error::{ProcessingError, Result};
-use crate::core::traits::Generator;
+pub use crate::core::traits::Generator;
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};

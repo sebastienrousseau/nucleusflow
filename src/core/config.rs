@@ -801,7 +801,7 @@ impl Config {
 /// # Arguments
 ///
 /// * `path` - The path to sanitize
-fn sanitize_path(path: &Path) -> PathBuf {
+pub fn sanitize_path(path: &Path) -> PathBuf {
     let mut components = Vec::new();
     for component in path.components() {
         match component {

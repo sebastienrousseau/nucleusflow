@@ -219,7 +219,7 @@ impl HtmlGenerator {
         let mut in_comment = false;
         let mut tag_start = 0;
 
-        let mut chars = content.chars().enumerate().peekable();
+        let mut chars = content.char_indices().peekable();
         while let Some((i, c)) = chars.next() {
             match c {
                 '<' => {
@@ -242,7 +242,7 @@ impl HtmlGenerator {
                 '>' => {
                     if in_comment {
                         // Check for comment end
-                        if i >= 2 && &content[i - 2..=i] == "-->" {
+                        if content[..=i].ends_with("-->") {
                             in_comment = false;
                         }
                     } else if in_tag {
@@ -330,7 +330,7 @@ impl HtmlGenerator {
                 }
                 '-' if in_comment => {
                     // Check for premature comment end
-                    if i >= 1 && content[i - 1..=i] == *"--" {
+                    if content[..=i].ends_with("--") {
                         if let Some((_, '>')) = chars.peek() {
                             in_comment = false;
                             let _ = chars.next();

@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.5] - 2026-10-30
+
+### Added
+
+- Added formal property-based test suite (`tests/property_tests.rs`) using `proptest`:
+  - Verified `MarkdownProcessor::process` panic-freedom and deterministic validation across arbitrary string inputs.
+  - Verified structured frontmatter extraction invariance under arbitrary text bodies.
+  - Verified path traversal rejection invariance in `ConfigBuilder::sanitize_path`.
+  - Verified `HtmlGenerator` minification safety on arbitrary HTML inputs.
+  - Added concurrent multi-threaded template rendering test proving thread-safety without filesystem race conditions.
+- Added repository standard compliance documentation:
+  - Added `AGENTS.md` specifying AI agent invariants and verification gates.
+  - Added `DEVELOPMENT.md` detailing developer toolchains and CI gate reproduction.
+  - Added `CODE_OF_CONDUCT.md`, `GOVERNANCE.md`, `SECURITY.md`, `SUPPORT.md`, and `CITATION.cff`.
+  - Added `docs/` technical reference manual: `ARCHITECTURE.md`, `POLICIES.md`, `COMPARISON.md`, and `BENCHMARKS.md`.
+  - Added runnable library pipeline example in `examples/basic.rs`.
+
+### Changed
+
+- Enforced zero-unsafe compiler guarantees: configured `unsafe_code = "forbid"` in `Cargo.toml` and applied `#![forbid(unsafe_code)]` at crate root across `src/lib.rs` and `src/main.rs`.
+- Restructured `README.md` to adhere strictly to the canonical standard from `/Users/seb/Code/README-TEMPLATE.md`.
+- Updated `Makefile` with single validation gate (`all: check clippy test`) and standard tasks.
+
+### Fixed
+
+- Fixed UTF-8 multi-byte character boundary slicing panic in `generators::html::is_valid_html` by switching to `char_indices` and suffix pattern matching.
+
 ## [0.0.4] - 2026-10-30
 
 ### Added

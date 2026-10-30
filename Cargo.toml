@@ -5,7 +5,7 @@
 [package]
 # General project metadata
 name = "nucleusflow"                       # The name of the library
-version = "0.0.4"                          # The version of the crate
+version = "0.0.5"                          # The version of the crate
 authors = ["NucleusFlow Contributors"]     # Library contributors
 edition = "2021"                           # Rust edition being used
 rust-version = "1.89.0"                    # Minimum supported Rust version
@@ -81,6 +81,7 @@ assert_cmd = "2.0"                          # Test command-line applications
 # Dependencies required for testing and development.
 criterion = "0.8"                           # Benchmarking library to test performance
 predicates = "3.1.2"                          # Predicate testing library
+proptest = "1.6"                            # Property testing library
 
 # -----------------------------------------------------------------------------
 # Dependencies
@@ -140,12 +141,12 @@ elided_lifetimes_in_paths = "allow"         # Allow lifetimes to be elided in pa
 non_camel_case_types = "allow"              # Allow non-camel-case types
 non_upper_case_globals = "allow"            # Allow non-uppercase global variables
 trivial_bounds = "allow"                    # Allow trivial bounds in trait definitions
-unsafe_code = "allow"                       # Allow the usage of unsafe code blocks
 
 ## Forbidden
 missing_debug_implementations = "forbid"    # Forbid missing `Debug` implementations
 non_ascii_idents = "forbid"                 # Forbid non-ASCII identifiers
 unreachable_pub = "forbid"                  # Forbid unreachable `pub` items
+unsafe_code = "forbid"                      # Forbid the usage of unsafe code blocks
 
 ## Denials
 dead_code = "deny"                          # Deny unused, dead code in the project
