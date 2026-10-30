@@ -2,7 +2,7 @@
 class Nucleusflow < Formula
   desc "High-performance, memory-safe static site generator written in Rust"
   homepage "https://nucleusflow.com"
-  url "https://github.com/sebastienrousseau/nucleusflow/archive/refs/tags/v0.0.9.tar.gz"
+  url "https://github.com/sebastienrousseau/nucleusflow/archive/refs/tags/v0.0.10.tar.gz"
   license any_of: ["Apache-2.0", "MIT"]
   head "https://github.com/sebastienrousseau/nucleusflow.git", branch: "main"
 

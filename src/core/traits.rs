@@ -368,6 +368,7 @@ mod tests {
         let test_file = temp_dir.path().join("test.txt");
         let generator = TestGenerator;
 
+        assert!(generator.validate(&test_file, None).is_ok());
         generator
             .generate("test content", &test_file, None)
             .unwrap();
@@ -403,6 +404,11 @@ mod tests {
         assert!(!default_options.strict_mode);
         assert!(default_options.validate);
         assert!(default_options.cache_enabled);
+
+        let deserialized: ProcessingOptions =
+            serde_json::from_str("{}").unwrap();
+        assert!(deserialized.validate);
+        assert!(deserialized.cache_enabled);
 
         let custom_options = ProcessingOptions {
             strict_mode: true,

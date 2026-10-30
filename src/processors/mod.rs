@@ -119,6 +119,11 @@ mod tests {
         assert!(config.validate);
         assert!(config.sanitize);
         assert!(config.options.is_empty());
+
+        let deserialized: ProcessorConfig =
+            serde_json::from_str("{}").unwrap();
+        assert!(deserialized.validate);
+        assert!(deserialized.sanitize);
     }
 
     #[test]

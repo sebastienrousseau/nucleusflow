@@ -279,7 +279,10 @@ impl HandlebarsRenderer {
                         e.to_string(),
                     ))
                 })?;
-            out.write(&result.to_string())?;
+            match result {
+                JsonValue::String(s) => out.write(&s)?,
+                other => out.write(&other.to_string())?,
+            }
             Ok(())
         };
 
@@ -465,5 +468,379 @@ pub mod helpers {
         fn name(&self) -> &str {
             "uppercase"
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_validation_error_and_conversion() {
+        let err = ValidationError {
+            details: "syntax error".to_string(),
+            line: Some(10),
+            column: Some(5),
+            source: Some("{{#if}}".to_string()),
+        };
+        assert_eq!(err.details, "syntax error");
+        assert_eq!(err.line, Some(10));
+        assert_eq!(err.column, Some(5));
+
+        let proc_err: ProcessingError = err.into();
+        match proc_err {
+            ProcessingError::TemplateProcessing { details, .. } => {
+                assert_eq!(details, "syntax error");
+            }
+            _ => panic!("Expected TemplateProcessing error"),
+        }
+    }
+
+    #[test]
+    fn test_handlebars_renderer_debug() {
+        let dir = tempdir().unwrap();
+        let renderer = HandlebarsRenderer::new(dir.path()).unwrap();
+        let debug_str = format!("{:?}", renderer);
+        assert!(debug_str.contains("HandlebarsRenderer"));
+        assert!(debug_str.contains("strict_mode: false"));
+    }
+
+    #[test]
+    fn test_load_templates_from_disk() {
+        let dir = tempdir().unwrap();
+        let post_path = dir.path().join("post.hbs");
+        std::fs::write(
+            &post_path,
+            "<h1>{{title}}</h1><main>{{{content}}}</main>",
+        )
+        .unwrap();
+
+        // Also create a non-hbs file to test filtering
+        let ignore_path = dir.path().join("ignored.txt");
+        std::fs::write(&ignore_path, "not a template").unwrap();
+
+        let renderer = HandlebarsRenderer::new(dir.path()).unwrap();
+        let mut ctx = serde_json::Map::new();
+        let _ = ctx.insert(
+            "title".to_string(),
+            JsonValue::String("Hello World".to_string()),
+        );
+        let _ = ctx.insert(
+            "content".to_string(),
+            JsonValue::String("<p>Body</p>".to_string()),
+        );
+
+        let rendered =
+            renderer.render("post", &JsonValue::Object(ctx)).unwrap();
+        assert_eq!(
+            rendered,
+            "<h1>Hello World</h1><main><p>Body</p></main>"
+        );
+    }
+
+    #[test]
+    fn test_load_templates_non_existent_dir() {
+        let path = PathBuf::from(
+            "/non/existent/template/path/nucleusflow_123",
+        );
+        let result = HandlebarsRenderer::new(&path);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_with_strict_mode() {
+        let dir = tempdir().unwrap();
+        let renderer = HandlebarsRenderer::new(dir.path())
+            .unwrap()
+            .with_strict_mode(true);
+        assert!(renderer.strict_mode);
+    }
+
+    #[test]
+    fn test_with_partial_and_render() {
+        let dir = tempdir().unwrap();
+        let renderer = HandlebarsRenderer::new(dir.path())
+            .unwrap()
+            .with_partial("header", "<header>{{site_name}}</header>")
+            .unwrap();
+
+        let tpl = "{{> header}}<h1>{{title}}</h1>";
+        renderer
+            .engine
+            .write()
+            .register_template_string("page", tpl)
+            .unwrap();
+        let _ = renderer
+            .template_cache
+            .write()
+            .insert("page".to_string(), tpl.to_string());
+
+        let mut ctx = serde_json::Map::new();
+        let _ = ctx.insert(
+            "site_name".to_string(),
+            JsonValue::String("My Site".to_string()),
+        );
+        let _ = ctx.insert(
+            "title".to_string(),
+            JsonValue::String("Home".to_string()),
+        );
+
+        let res =
+            renderer.render("page", &JsonValue::Object(ctx)).unwrap();
+        assert_eq!(res, "<header>My Site</header><h1>Home</h1>");
+    }
+
+    #[test]
+    fn test_with_partial_invalid_syntax() {
+        let dir = tempdir().unwrap();
+        let renderer = HandlebarsRenderer::new(dir.path()).unwrap();
+        let res = renderer.with_partial("bad", "{{#unclosed}}");
+        assert!(res.is_err());
+    }
+
+    #[derive(Clone, Copy)]
+    struct ReverseHelper;
+
+    impl TemplateHelper for ReverseHelper {
+        fn execute(
+            &self,
+            params: &[JsonValue],
+            _ctx: &JsonValue,
+        ) -> Result<JsonValue> {
+            let s =
+                params.first().and_then(|p| p.as_str()).unwrap_or("");
+            Ok(JsonValue::String(s.chars().rev().collect()))
+        }
+        fn name(&self) -> &str {
+            "reverse"
+        }
+    }
+
+    #[test]
+    fn test_with_helper_execution() {
+        assert_eq!(ReverseHelper.name(), "reverse");
+        let dir = tempdir().unwrap();
+        let renderer = HandlebarsRenderer::new(dir.path())
+            .unwrap()
+            .with_helper("reverse", ReverseHelper);
+
+        let tpl = "{{reverse word}}";
+        renderer
+            .engine
+            .write()
+            .register_template_string("rev", tpl)
+            .unwrap();
+        let _ = renderer
+            .template_cache
+            .write()
+            .insert("rev".to_string(), tpl.to_string());
+
+        let mut ctx = serde_json::Map::new();
+        let _ = ctx.insert(
+            "word".to_string(),
+            JsonValue::String("Rust".to_string()),
+        );
+        let res =
+            renderer.render("rev", &JsonValue::Object(ctx)).unwrap();
+        assert_eq!(res, "tsuR");
+    }
+
+    #[test]
+    fn test_uppercase_helper() {
+        let helper = helpers::UppercaseHelper;
+        assert_eq!(helper.name(), "uppercase");
+
+        let res = helper
+            .execute(
+                &[JsonValue::String("hello".to_string())],
+                &JsonValue::Null,
+            )
+            .unwrap();
+        assert_eq!(res, JsonValue::String("HELLO".to_string()));
+
+        let err = helper.execute(&[], &JsonValue::Null);
+        assert!(err.is_err());
+    }
+
+    #[test]
+    fn test_validate_template_syntax() {
+        let dir = tempdir().unwrap();
+        let renderer = HandlebarsRenderer::new(dir.path()).unwrap();
+
+        assert!(renderer
+            .validate_template("<h1>{{title}}</h1>")
+            .is_ok());
+
+        // Unmatched opening brace
+        let unclosed = renderer.validate_template("<h1>{{title</h1>");
+        assert!(unclosed.is_err());
+
+        // Single unmatched opening brace (passes handlebars but caught by bracket validator)
+        let single_open =
+            renderer.validate_template("<h1>Hello { world</h1>");
+        assert!(single_open.is_err());
+
+        // Single unmatched closing brace (passes handlebars but caught by bracket validator)
+        let single_close =
+            renderer.validate_template("<h1>Hello } world</h1>");
+        assert!(single_close.is_err());
+
+        // Unmatched closing brace
+        let extra_close =
+            renderer.validate_template("<h1>{{title}}}</h1>");
+        assert!(extra_close.is_err());
+
+        // Invalid handlebars block
+        let bad_block =
+            renderer.validate_template("{{#each items}}{{/if}}");
+        assert!(bad_block.is_err());
+    }
+
+    #[test]
+    fn test_strict_mode_validate_and_render() {
+        let dir = tempdir().unwrap();
+        let renderer = HandlebarsRenderer::new(dir.path())
+            .unwrap()
+            .with_strict_mode(true);
+
+        let tpl = "<title>{{title}}</title>";
+        renderer
+            .engine
+            .write()
+            .register_template_string("strict_doc", tpl)
+            .unwrap();
+        let _ = renderer
+            .template_cache
+            .write()
+            .insert("strict_doc".to_string(), tpl.to_string());
+
+        let mut valid_ctx = serde_json::Map::new();
+        let _ = valid_ctx.insert(
+            "title".to_string(),
+            JsonValue::String("Hello".to_string()),
+        );
+
+        assert!(renderer
+            .validate(
+                "strict_doc",
+                &JsonValue::Object(valid_ctx.clone())
+            )
+            .is_ok());
+        assert!(renderer
+            .render("strict_doc", &JsonValue::Object(valid_ctx))
+            .is_ok());
+
+        let empty_ctx = serde_json::Map::new();
+        assert!(renderer
+            .validate(
+                "strict_doc",
+                &JsonValue::Object(empty_ctx.clone())
+            )
+            .is_err());
+        assert!(renderer
+            .render("strict_doc", &JsonValue::Object(empty_ctx))
+            .is_err());
+    }
+
+    #[test]
+    fn test_validate_missing_template() {
+        let dir = tempdir().unwrap();
+        let renderer = HandlebarsRenderer::new(dir.path()).unwrap();
+        let res = renderer.validate("non_existent", &JsonValue::Null);
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_render_error_invalid_expression() {
+        let dir = tempdir().unwrap();
+        let renderer = HandlebarsRenderer::new(dir.path()).unwrap();
+        // Missing template rendering
+        let res =
+            renderer.render("non_existent_template", &JsonValue::Null);
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_load_templates_invalid_syntax() {
+        let dir = tempdir().unwrap();
+        let bad_path = dir.path().join("broken.hbs");
+        std::fs::write(&bad_path, "{{#if}}unclosed").unwrap();
+        let res = HandlebarsRenderer::new(dir.path());
+        assert!(res.is_err());
+    }
+
+    #[derive(Clone, Copy)]
+    struct NumberHelper;
+
+    impl TemplateHelper for NumberHelper {
+        fn execute(
+            &self,
+            _params: &[JsonValue],
+            _ctx: &JsonValue,
+        ) -> Result<JsonValue> {
+            Ok(JsonValue::from(42))
+        }
+        fn name(&self) -> &str {
+            "num"
+        }
+    }
+
+    #[derive(Clone, Copy)]
+    struct FailingHelper;
+
+    impl TemplateHelper for FailingHelper {
+        fn execute(
+            &self,
+            _params: &[JsonValue],
+            _ctx: &JsonValue,
+        ) -> Result<JsonValue> {
+            Err(ProcessingError::internal_error("helper crashed"))
+        }
+        fn name(&self) -> &str {
+            "fail"
+        }
+    }
+
+    #[test]
+    fn test_helper_variants() {
+        assert_eq!(NumberHelper.name(), "num");
+        assert_eq!(FailingHelper.name(), "fail");
+        let dir = tempdir().unwrap();
+        let renderer = HandlebarsRenderer::new(dir.path())
+            .unwrap()
+            .with_helper("num", NumberHelper)
+            .with_helper("fail", FailingHelper);
+
+        let tpl = "{{num}}";
+        let _ = renderer
+            .engine
+            .write()
+            .register_template_string("num_doc", tpl);
+        let _ = renderer
+            .template_cache
+            .write()
+            .insert("num_doc".to_string(), tpl.to_string());
+        let res = renderer.render("num_doc", &JsonValue::Null).unwrap();
+        assert_eq!(res, "42");
+
+        let fail_tpl = "{{fail}}";
+        let _ = renderer
+            .engine
+            .write()
+            .register_template_string("fail_doc", fail_tpl);
+        let _ = renderer
+            .template_cache
+            .write()
+            .insert("fail_doc".to_string(), fail_tpl.to_string());
+        assert!(renderer.render("fail_doc", &JsonValue::Null).is_err());
+    }
+
+    #[test]
+    fn test_validate_context_missing_from_cache() {
+        let dir = tempdir().unwrap();
+        let renderer = HandlebarsRenderer::new(dir.path()).unwrap();
+        let res = renderer.validate_context("ghost", &JsonValue::Null);
+        assert!(res.is_err());
     }
 }

@@ -120,7 +120,11 @@ pub fn build() -> Command {
 /// * `Result<()>` - Indicates success, or an error if execution fails.
 pub fn execute() -> Result<()> {
     let matches = build().get_matches();
+    execute_matches(&matches)
+}
 
+/// Executes command-line logic given parsed `ArgMatches`.
+pub fn execute_matches(matches: &clap::ArgMatches) -> Result<()> {
     match matches.subcommand() {
         Some(("new", sub_matches)) => {
             let name = sub_matches.get_one::<String>("name").unwrap();
@@ -255,25 +259,102 @@ mod tests {
             new_cmd.get_one::<String>("template").unwrap(),
             "blog"
         );
+
+        assert!(execute_matches(&matches).is_ok());
+    }
+
+    #[test]
+    fn test_new_command_empty_name() {
+        let matches = get_matches(vec!["nucleusflow", "new", ""]);
+        let result = execute_matches(&matches);
+        assert!(result.is_err());
     }
 
     #[test]
     fn test_build_command() {
+        let temp_dir = std::env::temp_dir().join(format!(
+            "nucleusflow_test_{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir_all(&temp_dir).unwrap();
+        let content_file = temp_dir.join("content.md");
+        fs::write(&content_file, "hello   world\n\nrust").unwrap();
+
         let matches = get_matches(vec![
             "nucleusflow",
             "build",
             "--content",
-            "content",
+            content_file.to_str().unwrap(),
             "--output",
-            "public",
+            temp_dir.to_str().unwrap(),
             "--minify",
         ]);
         let build_cmd = matches.subcommand_matches("build").unwrap();
 
         assert_eq!(
             build_cmd.get_one::<PathBuf>("content").unwrap().as_path(),
-            PathBuf::from("content").as_path()
+            content_file.as_path()
         );
         assert!(build_cmd.get_flag("minify"));
+
+        let res = execute_matches(&matches);
+        assert!(res.is_ok());
+
+        let output_file = temp_dir.join("output.html");
+        assert!(output_file.exists());
+        let output_content = fs::read_to_string(&output_file).unwrap();
+        assert_eq!(output_content, "HELLO WORLD RUST");
+
+        // Now test without minify
+        let matches_no_min = get_matches(vec![
+            "nucleusflow",
+            "build",
+            "--content",
+            content_file.to_str().unwrap(),
+            "--output",
+            temp_dir.to_str().unwrap(),
+        ]);
+        let res_no_min = execute_matches(&matches_no_min);
+        assert!(res_no_min.is_ok());
+
+        let _ = fs::remove_dir_all(&temp_dir);
+    }
+
+    #[test]
+    fn test_build_command_missing_content() {
+        let non_existent =
+            PathBuf::from("/path/that/does/not/exist/ever/12345");
+        let matches = get_matches(vec![
+            "nucleusflow",
+            "build",
+            "--content",
+            non_existent.to_str().unwrap(),
+        ]);
+        let result = execute_matches(&matches);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_execute_matches_unknown_subcommand() {
+        // Build an empty clap command to test None subcommand
+        let cmd = Command::new("test");
+        let matches = cmd.get_matches_from(vec!["test"]);
+        let result = execute_matches(&matches);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_minify_content_helper() {
+        let raw = "  hello   world \n \t foo   bar  ";
+        let minified = minify_content(raw);
+        assert_eq!(minified, "hello world foo bar");
+    }
+
+    #[test]
+    fn test_print_banner_fn() {
+        print_banner();
     }
 }

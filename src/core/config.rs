@@ -1572,4 +1572,338 @@ mod tests {
         // Ensure it returns an error due to the invalid key
         assert!(result.is_err());
     }
+
+    #[test]
+    fn test_config_builder_full_build_and_validation() {
+        let test_root = PathBuf::from("target/test_cfg_full");
+        let content_dir = test_root.join("content");
+        let template_dir = test_root.join("templates");
+        let output_dir = test_root.join("public");
+        let asset_dir = test_root.join("assets");
+        fs::create_dir_all(&content_dir).unwrap();
+        fs::create_dir_all(&template_dir).unwrap();
+        fs::create_dir_all(&output_dir).unwrap();
+        fs::create_dir_all(&asset_dir).unwrap();
+
+        let config_file = test_root.join("config.toml");
+        let toml_str = format!(
+            r#"
+content_dir = "{}"
+template_dir = "{}"
+output_dir = "{}"
+profile = "staging"
+
+[content]
+validate = true
+sanitize = true
+extract_metadata = true
+max_content_size = 5242880
+
+[template]
+strict_mode = true
+cache_templates = true
+max_template_size = 2097152
+
+[output]
+minify = true
+pretty_print = false
+asset_dir = "{}"
+max_output_size = 10485760
+"#,
+            content_dir.to_str().unwrap(),
+            template_dir.to_str().unwrap(),
+            output_dir.to_str().unwrap(),
+            asset_dir.to_str().unwrap()
+        );
+        fs::write(&config_file, toml_str).unwrap();
+
+        let arc_config = ConfigBuilder::new()
+            .with_file(&config_file)
+            .with_profile(Profile::Staging)
+            .with_override("content.validate", "false")
+            .with_override("content.sanitize", "true")
+            .with_override("content.extract_metadata", "false")
+            .with_override("content.max_content_size", "1048576")
+            .with_override("content.custom_opt", "test_val")
+            .with_override("template.strict_mode", "true")
+            .with_override("template.cache_templates", "false")
+            .with_override("template.max_template_size", "1048576")
+            .with_override("template.tmpl_opt", "test_tmpl")
+            .with_override("output.minify", "true")
+            .with_override("output.pretty_print", "true")
+            .with_override("output.max_output_size", "2097152")
+            .with_override("output.out_opt", "test_out")
+            .with_override("custom.my_key", "custom_val")
+            .build()
+            .unwrap();
+
+        let cfg = arc_config.read();
+        assert_eq!(cfg.profile, Profile::Staging);
+        assert!(!cfg.content.validate);
+        assert!(cfg.content.sanitize);
+        assert!(!cfg.content.extract_metadata);
+        assert_eq!(cfg.content.max_content_size, 1048576);
+        assert!(cfg.template.strict_mode);
+        assert!(!cfg.template.cache_templates);
+        assert_eq!(cfg.template.max_template_size, 1048576);
+        assert!(cfg.output.minify);
+        assert!(cfg.output.pretty_print);
+        assert_eq!(cfg.output.max_output_size, 2097152);
+        assert_eq!(
+            cfg.custom.get("my_key").unwrap(),
+            &TomlValue::String("custom_val".into())
+        );
+        assert!(cfg.validate().is_ok());
+
+        let _ = fs::remove_dir_all(&test_root);
+    }
+
+    #[test]
+    fn test_production_profile_enforces_security() {
+        let test_root = PathBuf::from("target/test_cfg_prod");
+        let content_dir = test_root.join("content");
+        let template_dir = test_root.join("templates");
+        fs::create_dir_all(&content_dir).unwrap();
+        fs::create_dir_all(&template_dir).unwrap();
+
+        let arc_config = ConfigBuilder::new()
+            .with_override("content_dir", content_dir.to_str().unwrap())
+            .with_override(
+                "template_dir",
+                template_dir.to_str().unwrap(),
+            )
+            .with_profile(Profile::Production)
+            .build()
+            .unwrap();
+
+        let cfg = arc_config.read();
+        assert_eq!(cfg.profile, Profile::Production);
+        assert!(cfg.content.sanitize);
+        assert!(cfg.template.strict_mode);
+        assert_eq!(cfg.output.rate_limit, 1024 * 1024);
+
+        let _ = fs::remove_dir_all(&test_root);
+    }
+
+    #[test]
+    fn test_env_prefix_overrides() {
+        let test_root = PathBuf::from("target/test_cfg_env");
+        let content_dir = test_root.join("content");
+        let template_dir = test_root.join("templates");
+        fs::create_dir_all(&content_dir).unwrap();
+        fs::create_dir_all(&template_dir).unwrap();
+
+        // Set test env vars
+        env::set_var(
+            "TESTNUCLEUS_CONTENT_DIR",
+            content_dir.to_str().unwrap(),
+        );
+        env::set_var(
+            "TESTNUCLEUS_TEMPLATE_DIR",
+            template_dir.to_str().unwrap(),
+        );
+        env::set_var("TESTNUCLEUS_PROFILE", "staging");
+
+        let arc_config = ConfigBuilder::new()
+            .with_env_prefix("TESTNUCLEUS_")
+            .build()
+            .unwrap();
+
+        let cfg = arc_config.read();
+        assert_eq!(cfg.profile, Profile::Staging);
+
+        env::remove_var("TESTNUCLEUS_CONTENT_DIR");
+        env::remove_var("TESTNUCLEUS_TEMPLATE_DIR");
+        env::remove_var("TESTNUCLEUS_PROFILE");
+
+        let _ = fs::remove_dir_all(&test_root);
+    }
+
+    #[test]
+    fn test_validation_errors() {
+        let temp_dir = TempDir::new().unwrap();
+        let mut cfg = Config {
+            content_dir: temp_dir.path().join("non_existent_content"),
+            ..Default::default()
+        };
+        assert!(cfg.validate().is_err());
+
+        // File instead of dir
+        let file_path = temp_dir.path().join("file.txt");
+        fs::write(&file_path, "not a dir").unwrap();
+        cfg.content_dir = file_path.clone();
+        cfg.template_dir = temp_dir.path().to_path_buf();
+        assert!(cfg.validate().is_err());
+
+        // Empty extensions
+        cfg.content_dir = temp_dir.path().to_path_buf();
+        cfg.content.extensions.clear();
+        assert!(cfg.validate().is_err());
+
+        // Excessive content size limit
+        cfg.content.extensions = vec!["md".to_string()];
+        cfg.content.max_content_size = 200 * 1024 * 1024;
+        assert!(cfg.validate().is_err());
+    }
+
+    #[test]
+    fn test_apply_config_value_errors() {
+        let mut cfg = Config::default();
+        assert!(apply_config_value(&mut cfg, "unknown_key", &"val")
+            .is_err());
+        assert!(apply_config_value(
+            &mut cfg,
+            "unknown.section",
+            &"val"
+        )
+        .is_err());
+        assert!(apply_config_value(
+            &mut cfg,
+            "content.validate",
+            &"not_a_bool"
+        )
+        .is_err());
+        assert!(apply_config_value(
+            &mut cfg,
+            "content.sanitize",
+            &"not_a_bool"
+        )
+        .is_err());
+        assert!(apply_config_value(
+            &mut cfg,
+            "content.extract_metadata",
+            &"not_a_bool"
+        )
+        .is_err());
+        assert!(apply_config_value(
+            &mut cfg,
+            "content.max_content_size",
+            &"not_a_num"
+        )
+        .is_err());
+        assert!(apply_config_value(
+            &mut cfg,
+            "template.strict_mode",
+            &"not_a_bool"
+        )
+        .is_err());
+        assert!(apply_config_value(
+            &mut cfg,
+            "template.cache_templates",
+            &"not_a_bool"
+        )
+        .is_err());
+        assert!(apply_config_value(
+            &mut cfg,
+            "template.max_template_size",
+            &"not_a_num"
+        )
+        .is_err());
+        assert!(apply_config_value(
+            &mut cfg,
+            "output.minify",
+            &"not_a_bool"
+        )
+        .is_err());
+        assert!(apply_config_value(
+            &mut cfg,
+            "output.pretty_print",
+            &"not_a_bool"
+        )
+        .is_err());
+        assert!(apply_config_value(
+            &mut cfg,
+            "output.max_output_size",
+            &"not_a_num"
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn test_custom_dangerous_value() {
+        let mut cfg = Config::default();
+        let res = cfg.set_custom("bad_key", "javascript:alert(1)");
+        assert!(res.is_err());
+
+        // get_custom with unsafe key returns Ok(None)
+        assert!(cfg
+            .get_custom::<String>("../unsafe")
+            .unwrap()
+            .is_none());
+    }
+
+    #[test]
+    fn test_needs_reload_and_reload() {
+        let mut cfg = Config::default();
+        assert!(!cfg.needs_reload());
+        assert!(!cfg.reload_if_needed().unwrap());
+    }
+
+    #[test]
+    fn test_load_from_file_errors() {
+        let temp_dir = TempDir::new().unwrap();
+        let non_existent = temp_dir.path().join("does_not_exist.toml");
+        assert!(load_from_file(&non_existent, 1024).is_err());
+
+        let invalid_toml = temp_dir.path().join("invalid.toml");
+        fs::write(&invalid_toml, "[broken toml syntax").unwrap();
+        assert!(load_from_file(&invalid_toml, 1024).is_err());
+    }
+
+    #[test]
+    fn test_profile_variants_and_defaults() {
+        assert_eq!(Profile::default(), Profile::Development);
+        let _ = ConfigBuilder::default();
+        let _ = ContentConfig::default();
+        let _ = TemplateConfig::default();
+        let _ = OutputConfig::default();
+
+        let mut cfg = Config::default();
+        apply_config_value(&mut cfg, "profile", &"development")
+            .unwrap();
+        assert_eq!(cfg.profile, Profile::Development);
+        apply_config_value(&mut cfg, "profile", &"custom").unwrap();
+        assert_eq!(cfg.profile, Profile::Custom);
+        apply_config_value(&mut cfg, "profile", &"other").unwrap();
+        assert_eq!(cfg.profile, Profile::Custom);
+
+        // Test output_dir and output.asset_dir overrides
+        apply_config_value(&mut cfg, "output_dir", &"custom_out")
+            .unwrap();
+        assert_eq!(cfg.output_dir, PathBuf::from("custom_out"));
+        apply_config_value(
+            &mut cfg,
+            "output.asset_dir",
+            &"custom_assets",
+        )
+        .unwrap();
+        assert_eq!(
+            cfg.output.asset_dir,
+            Some(PathBuf::from("custom_assets"))
+        );
+
+        // Test deserializing empty TOML triggers default_* functions
+        let toml_cfg: Config = toml::from_str("").unwrap();
+        assert_eq!(toml_cfg.content_dir, PathBuf::from("content"));
+        assert_eq!(toml_cfg.output_dir, PathBuf::from("public"));
+        assert_eq!(toml_cfg.template_dir, PathBuf::from("templates"));
+        assert!(toml_cfg.content.validate);
+
+        // Test sanitize_path with CurDir
+        let sanitized = sanitize_path(Path::new("./foo/./bar/../baz"));
+        assert_eq!(sanitized, PathBuf::from("foo/baz"));
+
+        // Test get_custom type conversion failure
+        cfg.set_custom("num_str", "not_a_bool").unwrap();
+        let bool_res: Result<Option<bool>> = cfg.get_custom("num_str");
+        assert!(bool_res.is_err());
+
+        // Test array and table safe values
+        let arr =
+            TomlValue::Array(vec![TomlValue::String("item".into())]);
+        assert!(is_safe_config_value(&arr));
+        let mut tbl = toml::map::Map::new();
+        let _ = tbl.insert("k".into(), TomlValue::Integer(123));
+        assert!(is_safe_config_value(&TomlValue::Table(tbl)));
+    }
 }
