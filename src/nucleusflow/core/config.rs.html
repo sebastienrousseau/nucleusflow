@@ -801,7 +801,7 @@
 <a href=#801 id=801 data-nosnippet>801</a>/// # Arguments
 <a href=#802 id=802 data-nosnippet>802</a>///
 <a href=#803 id=803 data-nosnippet>803</a>/// * `path` - The path to sanitize
-<a href=#804 id=804 data-nosnippet>804</a></span><span class="kw">fn </span>sanitize_path(path: <span class="kw-2">&amp;</span>Path) -&gt; PathBuf {
+<a href=#804 id=804 data-nosnippet>804</a></span><span class="kw">pub fn </span>sanitize_path(path: <span class="kw-2">&amp;</span>Path) -&gt; PathBuf {
 <a href=#805 id=805 data-nosnippet>805</a>    <span class="kw">let </span><span class="kw-2">mut </span>components = Vec::new();
 <a href=#806 id=806 data-nosnippet>806</a>    <span class="kw">for </span>component <span class="kw">in </span>path.components() {
 <a href=#807 id=807 data-nosnippet>807</a>        <span class="kw">match </span>component {

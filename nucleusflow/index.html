@@ -1,115 +1,203 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="NucleusFlow Library"><title>nucleusflow - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="nucleusflow" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (92b5b8c87 2026-10-29)" data-channel="nightly" data-search-js="search-835b9732.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../static.files/storage-41dd4d93.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-9f56287d.css"></noscript><link rel="icon" href="https://kura.pro/nucleusflow/images/favicon.ico"></head><body class="rustdoc mod crate"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Crate nucleusflow</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../nucleusflow/index.html"><img src="https://kura.pro/nucleusflow/images/logos/nucleusflow.svg" alt="logo"></a><h2><a href="../nucleusflow/index.html">nucleusflow</a><span class="version">0.0.4</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#nucleusflow-library" title="NucleusFlow Library">NucleusFlow Library</a></li><li><a href="#nucleusflow" title="`NucleusFlow`"><code>NucleusFlow</code></a><ul><li><a href="#overview" title="Overview">Overview</a></li><li><a href="#features" title="Features">Features</a></li><li><a href="#installation" title="Installation">Installation</a></li><li><a href="#usage" title="Usage">Usage</a></li><li><a href="#documentation" title="Documentation">Documentation</a></li><li><a href="#examples" title="Examples">Examples</a></li><li><a href="#contributing" title="Contributing">Contributing</a></li><li><a href="#license" title="License">License</a></li><li><a href="#acknowledgements" title="Acknowledgements">Acknowledgements</a></li></ul></li></ul><h3><a href="#modules">Crate Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#traits" title="Traits">Traits</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1>Crate <span>nucleusflow</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/nucleusflow/lib.rs.html#4-454">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="nucleusflow-library"><a class="doc-anchor" href="#nucleusflow-library">§</a>NucleusFlow Library</h2>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="NucleusFlow Library"><title>nucleusflow - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="nucleusflow" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (92b5b8c87 2026-10-29)" data-channel="nightly" data-search-js="search-835b9732.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../static.files/storage-41dd4d93.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-9f56287d.css"></noscript><link rel="icon" href="https://kura.pro/nucleusflow/images/favicon.ico"></head><body class="rustdoc mod crate"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Crate nucleusflow</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../nucleusflow/index.html"><img src="https://kura.pro/nucleusflow/images/logos/nucleusflow.svg" alt="logo"></a><h2><a href="../nucleusflow/index.html">nucleusflow</a><span class="version">0.0.5</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#nucleusflow-library" title="NucleusFlow Library">NucleusFlow Library</a><ul><li><a href="#contents" title="Contents">Contents</a></li><li><a href="#install" title="Install">Install</a></li><li><a href="#requirements" title="Requirements">Requirements</a></li><li><a href="#quick-start" title="Quick Start">Quick Start</a></li><li><a href="#the-nucleusflow-ecosystem" title="The NucleusFlow ecosystem">The NucleusFlow ecosystem</a></li><li><a href="#capabilities-at-a-glance" title="Capabilities at a glance">Capabilities at a glance</a></li><li><a href="#ecosystem-comparison" title="Ecosystem comparison">Ecosystem comparison</a></li><li><a href="#benchmarks" title="Benchmarks">Benchmarks</a></li><li><a href="#features" title="Features">Features</a></li><li><a href="#configuration" title="Configuration">Configuration</a></li><li><a href="#examples" title="Examples">Examples</a></li><li><a href="#when-not-to-use-nucleusflow" title="When not to use NucleusFlow">When not to use NucleusFlow</a></li><li><a href="#development" title="Development">Development</a></li><li><a href="#security" title="Security">Security</a></li><li><a href="#documentation" title="Documentation">Documentation</a></li><li><a href="#stability-guarantees" title="Stability guarantees">Stability guarantees</a></li><li><a href="#license" title="License">License</a></li></ul></li></ul><h3><a href="#reexports">Crate Items</a></h3><ul class="block"><li><a href="#reexports" title="Re-exports">Re-exports</a></li><li><a href="#modules" title="Modules">Modules</a></li><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#traits" title="Traits">Traits</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1>Crate <span>nucleusflow</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/nucleusflow/lib.rs.html#4-456">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="nucleusflow-library"><a class="doc-anchor" href="#nucleusflow-library">§</a>NucleusFlow Library</h2>
 <p>NucleusFlow provides a suite of tools for processing, rendering, and generating
 content for static sites or other document-based applications.
 This library includes support for content transformation, template rendering, and output
 generation with a configurable pipeline for flexible usage.</p>
 <p>For more information, visit the <a href="https://docs.rs/nucleusflow">NucleusFlow documentation</a>.</p>
-<!-- markdownlint-disable MD033 MD041 -->
-<p><img src="https://kura.pro/nucleusflow/images/logos/nucleusflow.svg"
-alt="NucleusFlow logo" height="66" align="right" /></p>
-<!-- markdownlint-enable MD033 MD041 -->
-<h2 id="nucleusflow"><a class="doc-anchor" href="#nucleusflow">§</a><code>NucleusFlow</code></h2>
-<p>A fast, flexible and secure static site generator written in Rust.</p>
-<!-- markdownlint-disable MD033 MD041 -->
-<center>
-<!-- markdownlint-enable MD033 MD041 -->
-<p><a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/rust-f04041?style=for-the-badge&amp;labelColor=c0282d&amp;logo=rust" alt="Made With Love" /></a> <a href="https://crates.io/crates/nucleusflow"><img src="https://img.shields.io/crates/v/nucleusflow.svg?style=for-the-badge&amp;color=fc8d62&amp;logo=rust" alt="Crates.io" /></a> <a href="https://lib.rs/crates/nucleusflow"><img src="https://img.shields.io/badge/lib.rs-v0.0.1-orange.svg?style=for-the-badge" alt="lib.rs" /></a> <a href="https://docs.rs/nucleusflow"><img src="https://img.shields.io/badge/docs.rs-nucleusflow-66c2a5?style=for-the-badge&amp;labelColor=555555&amp;logo=docs.rs" alt="Docs.rs" /></a> <a href="https://codecov.io/gh/sebastienrousseau/nucleusflow"><img src="https://img.shields.io/codecov/c/github/sebastienrousseau/nucleusflow?style=for-the-badge&amp;token=psbZ8MASWj&amp;logo=codecov" alt="Codecov" /></a> <a href="https://github.com/sebastienrousseau/nucleusflow/actions?query=branch%3Amain"><img src="https://img.shields.io/github/actions/workflow/status/sebastienrousseau/nucleusflow/release.yml?branch=main&amp;style=for-the-badge&amp;logo=github" alt="Build Status" /></a> <a href="https://github.com/sebastienrousseau/nucleusflow"><img src="https://img.shields.io/badge/github-sebastienrousseau/nucleusflow-8da0cb?style=for-the-badge&amp;labelColor=555555&amp;logo=github" alt="GitHub" /></a></p>
-<p>• <a href="https://nucleusflow.com">Website</a> • <a href="https://docs.rs/nucleusflow">Documentation</a> • <a href="https://github.com/sebastienrousseau/nucleusflow/issues">Report Bug</a> • <a href="https://github.com/sebastienrousseau/nucleusflow/issues">Request Feature</a> • <a href="https://github.com/sebastienrousseau/nucleusflow/blob/main/CONTRIBUTING.md">Contributing Guidelines</a></p>
-<!-- markdownlint-disable MD033 MD041 -->
-</center>
-<!-- markdownlint-enable MD033 MD041 -->
-<h3 id="overview"><a class="doc-anchor" href="#overview">§</a>Overview</h3>
-<p>NucleusFlow is a powerful content processing library and static site generator that prioritises security, performance and flexibility. Built in Rust, it offers a comprehensive toolkit for managing content lifecycles, from processing raw content to generating optimised static websites.</p>
-<h3 id="features"><a class="doc-anchor" href="#features">§</a>Features</h3>
+<!-- SPDX-License-Identifier: Apache-2.0 OR MIT -->
+<p align="center">
+  <img src="https://kura.pro/nucleusflow/images/logos/nucleusflow.svg" alt="NucleusFlow logo" width="128" />
+</p>
+<h1 align="center">NucleusFlow</h1>
+<p align="center">
+  A fast, flexible, and secure static site generator and content processing pipeline written in Rust.
+</p>
+<p align="center">
+  <a href="https://github.com/sebastienrousseau/nucleusflow/actions"><img src="https://img.shields.io/github/actions/workflow/status/sebastienrousseau/nucleusflow/ci.yml?style=for-the-badge&logo=github" alt="Build" height="28" /></a>
+  <a href="https://crates.io/crates/nucleusflow"><img src="https://img.shields.io/crates/v/nucleusflow.svg?style=for-the-badge&color=fc8d62&logo=rust" alt="Registry" height="28" /></a>
+  <a href="https://docs.rs/nucleusflow"><img src="https://img.shields.io/badge/docs.rs-nucleusflow-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs" alt="Docs" height="28" /></a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/sebastienrousseau/nucleusflow"><img src="https://img.shields.io/ossf-scorecard/github.com/sebastienrousseau/nucleusflow?style=for-the-badge&label=OpenSSF%20Scorecard&logo=openssf" alt="OpenSSF Scorecard" height="28" /></a>
+  <a href="LICENSE-APACHE"><img src="https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue.svg?style=for-the-badge" alt="License: Apache-2.0 OR MIT" height="28" /></a>
+  <a href="https://github.com/sebastienrousseau/nucleusflow/blob/main/docs/POLICIES.md"><img src="https://img.shields.io/badge/MSRV-1.89.0-93450a.svg?style=for-the-badge&logo=rust" alt="MSRV 1.89.0" height="28" /></a>
+</p>
+<hr />
+<h3 id="contents"><a class="doc-anchor" href="#contents">§</a>Contents</h3>
+<p><strong>Getting started</strong></p>
 <ul>
-<li>
-<p><strong>Secure Content Processing</strong></p>
+<li><a href="#install">Install</a> - Cargo, CLI binary, and library setup</li>
+<li><a href="#requirements">Requirements</a> - toolchain floor, platforms</li>
+<li><a href="#quick-start">Quick Start</a> - compile and run a static site pipeline in Rust</li>
+</ul>
+<p><strong>The NucleusFlow ecosystem</strong></p>
 <ul>
-<li>Robust input validation and sanitisation</li>
-<li>Path traversal protection</li>
-<li>Memory-safe operations</li>
-<li>Secure defaults for all operations</li>
+<li><a href="#the-nucleusflow-ecosystem">The NucleusFlow ecosystem</a> - core processing components and traits</li>
 </ul>
-</li>
-<li>
-<p><strong>Flexible Content Pipeline</strong></p>
+<p><strong>Library reference</strong></p>
 <ul>
-<li>Markdown processing with frontmatter support</li>
-<li>Template rendering with Handlebars</li>
-<li>HTML generation with minification</li>
-<li>Asset management and optimisation</li>
+<li><a href="#capabilities-at-a-glance">Capabilities at a glance</a> - the current surface by theme</li>
+<li><a href="#ecosystem-comparison">Ecosystem comparison</a> - short matrix; full table at <a href="docs/COMPARISON.md"><code>docs/COMPARISON.md</code></a></li>
+<li><a href="#benchmarks">Benchmarks</a> - headline numbers; full table at <a href="docs/BENCHMARKS.md"><code>docs/BENCHMARKS.md</code></a></li>
+<li><a href="#features">Features</a> - module-level capability list</li>
+<li><a href="#configuration">Configuration</a> - core options</li>
+<li><a href="#examples">Examples</a> - runnable example index</li>
 </ul>
-</li>
-<li>
-<p><strong>Performance Optimised</strong></p>
+<p><strong>Operational</strong></p>
 <ul>
-<li>Parallel processing capabilities</li>
-<li>Efficient memory usage</li>
-<li>Content caching</li>
-<li>Minimal dependencies</li>
+<li><a href="#when-not-to-use-nucleusflow">When not to use NucleusFlow</a> - limitations</li>
+<li><a href="#development">Development</a> - make targets, test suites, CI</li>
+<li><a href="#security">Security</a> - guarantees and compliance</li>
+<li><a href="#documentation">Documentation</a> - all reference docs</li>
+<li><a href="#stability-guarantees">Stability guarantees</a> - SemVer axis, output stability, minimum toolchain discipline</li>
+<li><a href="#license">License</a></li>
 </ul>
-</li>
-<li>
-<p><strong>Developer Experience</strong></p>
+<hr />
+<h3 id="install"><a class="doc-anchor" href="#install">§</a>Install</h3><h4 id="as-a-rust-library"><a class="doc-anchor" href="#as-a-rust-library">§</a>As a Rust library</h4><div class="example-wrap"><pre class="language-toml"><code>[dependencies]
+nucleusflow = &quot;0.0.5&quot;</code></pre></div>
+<p>Or install via Cargo:</p>
+<div class="example-wrap"><pre class="language-bash"><code>cargo add nucleusflow</code></pre></div><h4 id="as-a-cli-tool"><a class="doc-anchor" href="#as-a-cli-tool">§</a>As a CLI tool</h4><div class="example-wrap"><pre class="language-bash"><code>cargo install nucleusflow --locked</code></pre></div>
+<hr />
+<h3 id="requirements"><a class="doc-anchor" href="#requirements">§</a>Requirements</h3>
 <ul>
-<li>Intuitive CLI interface</li>
-<li>Rich error messages</li>
-<li>Extensive documentation</li>
-<li>Type-safe configurations</li>
+<li>Rust <strong>1.89.0 or newer</strong> for building and running all library and test targets.</li>
+<li>Linux, macOS, and Windows are tested in continuous integration.</li>
 </ul>
-</li>
-</ul>
-<h3 id="installation"><a class="doc-anchor" href="#installation">§</a>Installation</h3>
-<p>Add <code>nucleusflow</code> to your <code>Cargo.toml</code>:</p>
-<div class="example-wrap"><pre class="language-toml"><code>[dependencies]
-nucleusflow = &quot;0.0.4&quot;</code></pre></div><h3 id="usage"><a class="doc-anchor" href="#usage">§</a>Usage</h3>
-<p>Here’s a basic example of how to use <code>nucleusflow</code>:</p>
-
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>nucleusflow::{NucleusFlow, NucleusFlowConfig, FileContentProcessor, HtmlOutputGenerator, HtmlTemplateRenderer};
+<div class="table"><table><thead><tr><th style="text-align: left">Component</th><th style="text-align: center">Minimum toolchain</th><th style="text-align: left">Enforcement</th></tr></thead><tbody>
+<tr><td style="text-align: left"><code>nucleusflow</code></td><td style="text-align: center"><strong>1.89.0</strong></td><td style="text-align: left">Pinned via <code>rust-version</code> in <code>Cargo.toml</code>; enforced by CI.</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="quick-start"><a class="doc-anchor" href="#quick-start">§</a>Quick Start</h3>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>nucleusflow::{
+    FileContentProcessor, HtmlOutputGenerator, HtmlTemplateRenderer,
+    NucleusFlow, NucleusFlowConfig,
+};
 <span class="kw">use </span>std::path::PathBuf;
 
-<span class="comment">// Create configuration
-</span><span class="kw">let </span>config = NucleusFlowConfig::new(
-    <span class="string">"content"</span>,
-    <span class="string">"public"</span>,
-    <span class="string">"templates"
-</span>).expect(<span class="string">"Failed to create config"</span>);
+<span class="kw">fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>std::error::Error&gt;&gt; {
+    <span class="kw">let </span>config = NucleusFlowConfig::new(<span class="string">"content"</span>, <span class="string">"public"</span>, <span class="string">"templates"</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>content_processor = FileContentProcessor::new(PathBuf::from(<span class="string">"content"</span>));
+    <span class="kw">let </span>template_renderer = HtmlTemplateRenderer::new(PathBuf::from(<span class="string">"templates"</span>));
+    <span class="kw">let </span>output_generator = HtmlOutputGenerator::new(PathBuf::from(<span class="string">"public"</span>));
 
-<span class="comment">// Initialize processors with the concrete implementations
-</span><span class="kw">let </span>content_processor = FileContentProcessor::new(PathBuf::from(<span class="string">"content"</span>));
-<span class="kw">let </span>template_renderer = HtmlTemplateRenderer::new(PathBuf::from(<span class="string">"templates"</span>));
-<span class="kw">let </span>output_generator = HtmlOutputGenerator::new(PathBuf::from(<span class="string">"public"</span>));
+    <span class="kw">let </span>flow = NucleusFlow::new(
+        config,
+        Box::new(content_processor),
+        Box::new(template_renderer),
+        Box::new(output_generator),
+    );
 
-<span class="comment">// Create NucleusFlow instance
-</span><span class="kw">let </span>nucleus = NucleusFlow::new(
-    config,
-    Box::new(content_processor),
-    Box::new(template_renderer),
-    Box::new(output_generator)
-);
-
-<span class="comment">// Process content
-</span>nucleus.process().expect(<span class="string">"Failed to process content"</span>);</code></pre></div><h4 id="cli-usage"><a class="doc-anchor" href="#cli-usage">§</a>CLI Usage</h4><div class="example-wrap"><pre class="language-bash"><code># Create a new site
-nucleusflow new my-site --template blog
-
-# Build the site
-nucleusflow build --content content/ --output public/
-</code></pre></div>
-<p>This example demonstrates setting up NucleusFlow with a Markdown processor, Handlebars templating, and HTML output generation.</p>
-<h3 id="documentation"><a class="doc-anchor" href="#documentation">§</a>Documentation</h3>
-<p>For full API documentation, please visit <a href="https://docs.rs/nucleusflow">docs.rs/nucleusflow</a>.</p>
-<h3 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h3>
-<p>To explore more examples, clone the repository and run the following command:</p>
-<div class="example-wrap"><pre class="language-shell"><code>cargo run --example example_name</code></pre></div><h3 id="contributing"><a class="doc-anchor" href="#contributing">§</a>Contributing</h3>
-<p>Contributions are welcome! Please feel free to submit a Pull Request.</p>
-<h3 id="license"><a class="doc-anchor" href="#license">§</a>License</h3>
-<p>This project is licensed under either of</p>
+    flow.process()<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(())
+}</code></pre></div>
+<p>This snippet initializes a full static site generation pipeline with Markdown parsing, Handlebars layout templating, and minified HTML output generation.</p>
+<hr />
+<h3 id="the-nucleusflow-ecosystem"><a class="doc-anchor" href="#the-nucleusflow-ecosystem">§</a>The NucleusFlow ecosystem</h3>
+<p>NucleusFlow provides modular building blocks for document transformation pipelines:</p>
+<div class="table"><table><thead><tr><th style="text-align: left">Component</th><th style="text-align: left">Purpose</th><th style="text-align: left">Use case</th></tr></thead><tbody>
+<tr><td style="text-align: left"><code>NucleusFlow</code></td><td style="text-align: left">Top-level orchestrator</td><td style="text-align: left">Coordinates processor, renderer, and output stages</td></tr>
+<tr><td style="text-align: left"><code>FileContentProcessor</code></td><td style="text-align: left">Content reader &amp; parser</td><td style="text-align: left">Reads Markdown sources and parses YAML frontmatter</td></tr>
+<tr><td style="text-align: left"><code>HtmlTemplateRenderer</code></td><td style="text-align: left">Layout engine</td><td style="text-align: left">Renders dynamic Handlebars templates with site context</td></tr>
+<tr><td style="text-align: left"><code>HtmlOutputGenerator</code></td><td style="text-align: left">Output writer</td><td style="text-align: left">Minifies HTML/CSS and writes static assets securely</td></tr>
+<tr><td style="text-align: left"><code>ConfigBuilder</code></td><td style="text-align: left">Fluent configuration</td><td style="text-align: left">Customises file size limits, environment prefixes, and paths</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="capabilities-at-a-glance"><a class="doc-anchor" href="#capabilities-at-a-glance">§</a>Capabilities at a glance</h3><div class="table"><table><thead><tr><th style="text-align: left">Area</th><th style="text-align: left">Capability</th><th style="text-align: left">Status</th></tr></thead><tbody>
+<tr><td style="text-align: left">Safety</td><td style="text-align: left">Zero <code>unsafe</code> guarantee (<code>#![forbid(unsafe_code)]</code>)</td><td style="text-align: left">Active</td></tr>
+<tr><td style="text-align: left">Security</td><td style="text-align: left">Path traversal rejection and input sanitisation</td><td style="text-align: left">Active</td></tr>
+<tr><td style="text-align: left">Testing</td><td style="text-align: left">Property-based state space exploration via <code>proptest</code></td><td style="text-align: left">Active</td></tr>
+<tr><td style="text-align: left">Concurrency</td><td style="text-align: left">In-memory thread safety without filesystem locks</td><td style="text-align: left">Active</td></tr>
+<tr><td style="text-align: left">Tooling</td><td style="text-align: left">CLI for scaffold (<code>new</code>), build, and development server</td><td style="text-align: left">Active</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ecosystem-comparison"><a class="doc-anchor" href="#ecosystem-comparison">§</a>Ecosystem comparison</h3>
+<p>NucleusFlow focuses on library-first architecture, memory safety guarantees, and embeddable content pipelines.</p>
+<div class="table"><table><thead><tr><th style="text-align: left">Project</th><th style="text-align: center">Zero <code>unsafe</code></th><th style="text-align: center">Library-first API</th><th style="text-align: center">Handlebars templates</th></tr></thead><tbody>
+<tr><td style="text-align: left"><strong>NucleusFlow</strong></td><td style="text-align: center">Yes (<code>#![forbid(unsafe_code)]</code>)</td><td style="text-align: center">Yes</td><td style="text-align: center">Yes</td></tr>
+<tr><td style="text-align: left"><strong>Zola</strong></td><td style="text-align: center">No</td><td style="text-align: center">No (CLI only)</td><td style="text-align: center">No (Tera)</td></tr>
+<tr><td style="text-align: left"><strong>Cobalt</strong></td><td style="text-align: center">No</td><td style="text-align: center">No (CLI only)</td><td style="text-align: center">No (Liquid)</td></tr>
+</tbody></table>
+</div>
+<p>See <a href="docs/COMPARISON.md"><code>docs/COMPARISON.md</code></a> for the evidence and complete matrix.</p>
+<hr />
+<h3 id="benchmarks"><a class="doc-anchor" href="#benchmarks">§</a>Benchmarks</h3>
+<p>Measurements on Apple Silicon (M4 / macOS) executing the end-to-end static generation pipeline:</p>
+<div class="table"><table><thead><tr><th style="text-align: left">Scenario</th><th style="text-align: right">Result</th><th style="text-align: left">Environment</th></tr></thead><tbody>
+<tr><td style="text-align: left">Single Page Processing</td><td style="text-align: right">~28.0 µs</td><td style="text-align: left">Apple M4, Rust 1.89.0</td></tr>
+<tr><td style="text-align: left">Markdown with Frontmatter</td><td style="text-align: right">~4.2 µs</td><td style="text-align: left">Apple M4, Rust 1.89.0</td></tr>
+<tr><td style="text-align: left">HTML Minification</td><td style="text-align: right">~8.1 µs</td><td style="text-align: left">Apple M4, Rust 1.89.0</td></tr>
+</tbody></table>
+</div>
+<p>See <a href="docs/BENCHMARKS.md"><code>docs/BENCHMARKS.md</code></a> for methodology and full results.</p>
+<hr />
+<h3 id="features"><a class="doc-anchor" href="#features">§</a>Features</h3>
 <ul>
-<li><a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a></li>
-<li><a href="https://opensource.org/licenses/MIT">MIT license</a></li>
+<li><strong>Strict Path Security</strong>: Rejects all path traversal attempts (<code>..</code>, root directory escapes, invalid Unicode).</li>
+<li><strong>Zero <code>unsafe</code> Code</strong>: Guaranteed memory safety at compile time via <code>#![forbid(unsafe_code)]</code>.</li>
+<li><strong>Property-Tested Correctness</strong>: Verified against arbitrary Unicode strings and edge-case inputs.</li>
+<li><strong>Embedded Static Server</strong>: Built-in development server with custom mime detection and streaming responses.</li>
+<li><strong>Minification Engine</strong>: Integrated HTML and CSS minification via <code>minify-html</code> and <code>lightningcss</code>.</li>
+</ul>
+<hr />
+<h3 id="configuration"><a class="doc-anchor" href="#configuration">§</a>Configuration</h3>
+<p>NucleusFlow is configured via <code>NucleusFlowConfig</code> or the fluent <code>ConfigBuilder</code>:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>nucleusflow::ConfigBuilder;
+
+<span class="kw">let </span>config = ConfigBuilder::new()
+    .with_max_file_size(<span class="number">10 </span>* <span class="number">1024 </span>* <span class="number">1024</span>) <span class="comment">// 10 MB limit
+    </span>.with_auto_reload(<span class="bool-val">true</span>)
+    .build()
+    .expect(<span class="string">"Valid configuration"</span>);</code></pre></div>
+<hr />
+<h3 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h3>
+<p>To run the basic library example:</p>
+<div class="example-wrap"><pre class="language-bash"><code>cargo run --example basic</code></pre></div>
+<p>CLI scaffolding:</p>
+<div class="example-wrap"><pre class="language-bash"><code>nucleusflow new my-site --template blog
+nucleusflow build --content content/ --output public/</code></pre></div>
+<hr />
+<h3 id="when-not-to-use-nucleusflow"><a class="doc-anchor" href="#when-not-to-use-nucleusflow">§</a>When not to use NucleusFlow</h3>
+<ul>
+<li><strong>Dynamic Server-Side Rendering</strong>: NucleusFlow generates static files ahead of time; it is not a dynamic web application framework.</li>
+<li><strong>Distributed Database Storage</strong>: Content is ingested from directory trees and filesystems, not remote relational databases.</li>
+</ul>
+<hr />
+<h3 id="development"><a class="doc-anchor" href="#development">§</a>Development</h3><div class="example-wrap"><pre class="language-bash"><code>make check   # check code for syntax and typing errors
+make clippy  # run clippy lints with warnings denied
+make test    # run unit, integration, and property tests
+make fmt     # verify code formatting</code></pre></div>
+<p>To reproduce the primary verification gate:</p>
+<div class="example-wrap"><pre class="language-bash"><code>make</code></pre></div>
+<hr />
+<h3 id="security"><a class="doc-anchor" href="#security">§</a>Security</h3>
+<p>NucleusFlow enforces strict memory safety guarantees and rejects malicious path navigation.</p>
+<p>Report vulnerabilities according to <a href="SECURITY.md"><code>SECURITY.md</code></a>.</p>
+<hr />
+<h3 id="documentation"><a class="doc-anchor" href="#documentation">§</a>Documentation</h3>
+<ul>
+<li><a href="https://docs.rs/nucleusflow">API Reference (docs.rs)</a></li>
+<li><a href="docs/ARCHITECTURE.md">Architecture Guide</a></li>
+<li><a href="docs/POLICIES.md">Engineering Policies</a></li>
+<li><a href="docs/COMPARISON.md">Ecosystem Comparison</a></li>
+<li><a href="docs/BENCHMARKS.md">Benchmarks</a></li>
+<li><a href="DEVELOPMENT.md">Developer Guide</a></li>
+</ul>
+<hr />
+<h3 id="stability-guarantees"><a class="doc-anchor" href="#stability-guarantees">§</a>Stability guarantees</h3>
+<ul>
+<li>Semantic Versioning is strictly adhered to on a <code>+0.0.1</code> iteration cycle.</li>
+<li>Public trait signatures and configuration models follow deprecation windows prior to breaking changes.</li>
+<li>Output file path generation and templating semantics remain backwards compatible across non-breaking releases.</li>
+</ul>
+<hr />
+<h3 id="license"><a class="doc-anchor" href="#license">§</a>License</h3>
+<p>Dual-licensed under either:</p>
+<ul>
+<li>Apache License, Version 2.0 (<a href="LICENSE-APACHE">LICENSE-APACHE</a>)</li>
+<li>MIT license (<a href="LICENSE-MIT">LICENSE-MIT</a>)</li>
 </ul>
 <p>at your option.</p>
-<h3 id="acknowledgements"><a class="doc-anchor" href="#acknowledgements">§</a>Acknowledgements</h3>
-<p>Special thanks to all contributors who have helped build the <code>nucleusflow</code> library.</p>
-</div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><dl class="item-table"><dt><a class="mod" href="cli/index.html" title="mod nucleusflow::cli">cli</a></dt><dd>Provides command-line interface utilities.
+</div></details><h2 id="reexports" class="section-header">Re-exports<a href="#reexports" class="anchor">§</a></h2><dl class="item-table reexports"><dt id="reexport.ConfigBuilder"><code>pub use crate::core::config::<a class="struct" href="core/config/struct.ConfigBuilder.html" title="struct nucleusflow::core::config::ConfigBuilder">ConfigBuilder</a>;</code></dt><dt id="reexport.Generator"><code>pub use crate::core::traits::<a class="trait" href="core/traits/trait.Generator.html" title="trait nucleusflow::core::traits::Generator">Generator</a>;</code></dt></dl><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><dl class="item-table"><dt><a class="mod" href="cli/index.html" title="mod nucleusflow::cli">cli</a></dt><dd>Provides command-line interface utilities.
 Command-line interface for NucleusFlow</dd><dt><a class="mod" href="core/index.html" title="mod nucleusflow::core">core</a></dt><dd>Module containing core utilities, such as configuration and error handling.</dd><dt><a class="mod" href="generators/index.html" title="mod nucleusflow::generators">generators</a></dt><dd>Provides output generation utilities.</dd><dt><a class="mod" href="process/index.html" title="mod nucleusflow::process">process</a></dt><dd>Provides processing pipeline utilities.</dd><dt><a class="mod" href="processors/index.html" title="mod nucleusflow::processors">processors</a></dt><dd>Provides processors for content transformation.</dd><dt><a class="mod" href="template/index.html" title="mod nucleusflow::template">template</a></dt><dd>Provides template rendering utilities.</dd></dl><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.FileContentProcessor.html" title="struct nucleusflow::FileContentProcessor">File<wbr>Content<wbr>Processor</a></dt><dd>Concrete implementation of <code>ContentProcessor</code> that processes file content.</dd><dt><a class="struct" href="struct.HtmlOutputGenerator.html" title="struct nucleusflow::HtmlOutputGenerator">Html<wbr>Output<wbr>Generator</a></dt><dd>Concrete implementation of <code>Generator</code> for generating HTML files.</dd><dt><a class="struct" href="struct.HtmlTemplateRenderer.html" title="struct nucleusflow::HtmlTemplateRenderer">Html<wbr>Template<wbr>Renderer</a></dt><dd>Concrete implementation of <code>TemplateRenderer</code> for rendering HTML templates.</dd><dt><a class="struct" href="struct.NucleusFlow.html" title="struct nucleusflow::NucleusFlow">Nucleus<wbr>Flow</a></dt><dd>Main content processing pipeline for NucleusFlow.</dd><dt><a class="struct" href="struct.NucleusFlowConfig.html" title="struct nucleusflow::NucleusFlowConfig">Nucleus<wbr>Flow<wbr>Config</a></dt><dd>Configuration settings for NucleusFlow.</dd></dl><h2 id="traits" class="section-header">Traits<a href="#traits" class="anchor">§</a></h2><dl class="item-table"><dt><a class="trait" href="trait.ContentProcessor.html" title="trait nucleusflow::ContentProcessor">Content<wbr>Processor</a></dt><dd>Trait for content processing implementations.</dd><dt><a class="trait" href="trait.TemplateRenderer.html" title="trait nucleusflow::TemplateRenderer">Template<wbr>Renderer</a></dt><dd>Trait for template rendering implementations.</dd></dl><script type="text/json" id="notable-traits-data">{"IntoIter<T>":"<h3>Notable traits for <code><a class=\"struct\" href=\"https://doc.rust-lang.org/nightly/core/result/struct.IntoIter.html\" title=\"struct core::result::IntoIter\">IntoIter</a>&lt;T&gt;</code></h3><pre><code><div class=\"where\">impl&lt;T&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html\" title=\"trait core::iter::traits::iterator::Iterator\">Iterator</a> for <a class=\"struct\" href=\"https://doc.rust-lang.org/nightly/core/result/struct.IntoIter.html\" title=\"struct core::result::IntoIter\">IntoIter</a>&lt;T&gt;</div><div class=\"where\">    type <a href=\"https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html#associatedtype.Item\" class=\"associatedtype\">Item</a> = T;</div>","Iter<'_, T>":"<h3>Notable traits for <code><a class=\"struct\" href=\"https://doc.rust-lang.org/nightly/core/result/struct.Iter.html\" title=\"struct core::result::Iter\">Iter</a>&lt;'a, T&gt;</code></h3><pre><code><div class=\"where\">impl&lt;'a, T&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html\" title=\"trait core::iter::traits::iterator::Iterator\">Iterator</a> for <a class=\"struct\" href=\"https://doc.rust-lang.org/nightly/core/result/struct.Iter.html\" title=\"struct core::result::Iter\">Iter</a>&lt;'a, T&gt;</div><div class=\"where\">    type <a href=\"https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html#associatedtype.Item\" class=\"associatedtype\">Item</a> = <a class=\"primitive\" href=\"https://doc.rust-lang.org/nightly/std/primitive.reference.html\">&amp;'a T</a>;</div>","IterMut<'_, T>":"<h3>Notable traits for <code><a class=\"struct\" href=\"https://doc.rust-lang.org/nightly/core/result/struct.IterMut.html\" title=\"struct core::result::IterMut\">IterMut</a>&lt;'a, T&gt;</code></h3><pre><code><div class=\"where\">impl&lt;'a, T&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html\" title=\"trait core::iter::traits::iterator::Iterator\">Iterator</a> for <a class=\"struct\" href=\"https://doc.rust-lang.org/nightly/core/result/struct.IterMut.html\" title=\"struct core::result::IterMut\">IterMut</a>&lt;'a, T&gt;</div><div class=\"where\">    type <a href=\"https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html#associatedtype.Item\" class=\"associatedtype\">Item</a> = <a class=\"primitive\" href=\"https://doc.rust-lang.org/nightly/std/primitive.reference.html\">&amp;'a mut T</a>;</div>"}</script></section></div></main></body></html>

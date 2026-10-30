@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Profile"],"struct":["Config","ConfigBuilder","ContentConfig","OutputConfig","TemplateConfig"]};
+window.SIDEBAR_ITEMS = {"enum":["Profile"],"fn":["sanitize_path"],"struct":["Config","ConfigBuilder","ContentConfig","OutputConfig","TemplateConfig"]};
