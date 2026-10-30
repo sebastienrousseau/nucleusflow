@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use NucleusFlow in your work, please cite it as below."
+title: nucleusflow
+type: software
+authors:
+  - family-names: Rousseau
+    given-names: Sebastien
+    email: sebastian.rousseau@gmail.com
+repository-code: "https://github.com/sebastienrousseau/nucleusflow"
+url: "https://nucleusflow.com"
+license: "Apache-2.0 OR MIT"
+version: 0.0.5
+date-released: "2026-10-30"
+abstract: >-
+  A fast, flexible, and secure static site generator and content processing pipeline in Rust.
