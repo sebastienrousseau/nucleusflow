@@ -1,0 +1,27 @@
+# Codecov configuration.
+#
+# Coverage floors enforced as PR gates.
+# Target reflects steady state and absorbs run-to-run noise.
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 0.5%
+        if_ci_failed: error
+        informational: false
+
+    patch:
+      default:
+        target: 80%
+        threshold: 1%
+        if_ci_failed: error
+
+comment: false
+
+ignore:
+  - "benches/**"
+  - "examples/**"
+  - "tests/**"
+  - "build.rs"

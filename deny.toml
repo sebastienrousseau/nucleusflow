@@ -12,6 +12,11 @@ allow = [
     "Unicode-3.0",
     # dragonbox_ecma, offered as this OR BSL-1.0.
     "Apache-2.0 WITH LLVM-exception",
+    # MPL-2.0 — file-scoped weak copyleft; cssparser, parcel_selectors,
+    # and lightningcss via minify-html.
+    "MPL-2.0",
+    "BSD-2-Clause",
+    "ISC",
 ]
 
 [bans]
@@ -29,5 +34,7 @@ skip = []
 skip-tree = []
 
 [advisories]
-# List of advisory IDs to ignore
-ignore = []
+# List of advisory IDs to ignore (mirrors .cargo/audit.toml)
+ignore = [
+    "RUSTSEC-2026-0235",
+]

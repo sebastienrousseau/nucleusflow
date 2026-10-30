@@ -386,6 +386,23 @@ mod tests {
         assert_eq!(config.content_dir, content_path);
         assert_eq!(config.output_dir, output_path);
         assert_eq!(config.template_dir, template_path);
+
+        // Missing content_dir should error
+        let missing_path = temp_dir.path().join("missing");
+        assert!(NucleusFlowConfig::new(
+            &missing_path,
+            &output_path,
+            &template_path,
+        )
+        .is_err());
+
+        // Missing template_dir should error
+        assert!(NucleusFlowConfig::new(
+            &content_path,
+            &output_path,
+            &missing_path,
+        )
+        .is_err());
     }
 
     #[test]
@@ -401,6 +418,11 @@ mod tests {
         let test_content = "test content";
         let content_file = content_path.join("test.txt");
         fs::write(&content_file, test_content)?;
+
+        // Also test a nested subdirectory
+        let sub_content = content_path.join("sub");
+        fs::create_dir(&sub_content)?;
+        fs::write(sub_content.join("sub.txt"), "nested content")?;
 
         let config = NucleusFlowConfig::new(
             &content_path,
@@ -419,9 +441,13 @@ mod tests {
 
         let output_file = output_path.join("test.html");
         assert!(output_file.exists());
-
         let output_content = fs::read_to_string(output_file)?;
         assert_eq!(output_content, "<html>TEST CONTENT</html>");
+
+        let sub_output = output_path.join("sub").join("sub.html");
+        assert!(sub_output.exists());
+        let sub_output_content = fs::read_to_string(sub_output)?;
+        assert_eq!(sub_output_content, "<html>NESTED CONTENT</html>");
 
         Ok(())
     }
