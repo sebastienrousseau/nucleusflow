@@ -19,6 +19,10 @@
   <a href="https://github.com/sebastienrousseau/nucleusflow/blob/main/docs/POLICIES.md"><img src="https://img.shields.io/badge/MSRV-1.89.0-93450a.svg?style=for-the-badge&logo=rust" alt="MSRV 1.89.0" height="28" /></a>
 </p>
 
+<p align="center">
+  <img src=".github/demo.gif" alt="NucleusFlow demo: scaffold a site with new, build static assets, and inspect generated HTML" width="100%" />
+</p>
+
 ---
 
 ## Contents
@@ -77,7 +81,7 @@ Add NucleusFlow to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-nucleusflow = "0.0.9"
+nucleusflow = "0.0.10"
 ```
 
 Or run:

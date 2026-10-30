@@ -100,36 +100,56 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_read_content() {
-        let result = read_content("test_file.txt");
-        assert!(
-            result.is_ok()
-                || matches!(result, Err(ProcessError::InvalidPath(_)))
-        );
+    fn test_read_and_write_content() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let file_path = temp_dir.path().join("test_file.txt");
+
+        // Missing file
+        let missing = read_content(&file_path);
+        assert!(matches!(missing, Err(ProcessError::InvalidPath(_))));
+
+        // Write content
+        assert!(write_content(&file_path, "Sample content").is_ok());
+
+        // Read content
+        let read = read_content(&file_path).unwrap();
+        assert_eq!(read, "Sample content");
     }
 
     #[test]
-    fn test_write_content() {
-        let file_path = "test_output.txt";
-
-        // Run the test
-        let result = write_content(file_path, "Sample content");
-        assert!(
-            result.is_ok()
-                || matches!(result, Err(ProcessError::WriteError(_)))
-        );
-
-        // Cleanup: remove the test file if it was created
-        if Path::new(file_path).exists() {
-            std::fs::remove_file(file_path)
-                .expect("Failed to delete test output file");
-        }
-    }
-
-    #[test]
-    fn test_process_content() {
+    fn test_process_content_success_and_error() {
         let transform_fn = |s: &str| Ok(s.to_uppercase());
         let result = process_content("test content", transform_fn);
         assert_eq!(result.unwrap(), "TEST CONTENT");
+
+        let failing_fn =
+            |_s: &str| Err("custom transform failure".to_string());
+        let err_result = process_content("input", failing_fn);
+        assert!(matches!(
+            err_result,
+            Err(ProcessError::ContentError(_))
+        ));
+    }
+
+    #[test]
+    fn test_process_error_display() {
+        let io_err =
+            io::Error::new(io::ErrorKind::NotFound, "file not found");
+        let read_err = ProcessError::ReadError(io_err);
+        assert!(format!("{}", read_err).contains("Failed to read file"));
+
+        let write_io_err =
+            io::Error::new(io::ErrorKind::PermissionDenied, "denied");
+        let write_err = ProcessError::WriteError(write_io_err);
+        assert!(format!("{}", write_err)
+            .contains("Failed to write to file"));
+
+        let content_err =
+            ProcessError::ContentError("bad content".into());
+        assert!(format!("{}", content_err)
+            .contains("Failed to process content"));
+
+        let path_err = ProcessError::InvalidPath("bad path".into());
+        assert!(format!("{}", path_err).contains("Invalid path"));
     }
 }

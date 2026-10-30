@@ -453,4 +453,24 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn test_auxiliary_processors_and_generators() {
+        let temp_dir = TempDir::new().unwrap();
+        let p =
+            FileContentProcessor::new(temp_dir.path().to_path_buf());
+        assert!(p.validate("any string").is_ok());
+
+        let r =
+            HtmlTemplateRenderer::new(temp_dir.path().to_path_buf());
+        assert!(r.validate("template", &serde_json::json!({})).is_ok());
+
+        let g = HtmlOutputGenerator::new(temp_dir.path().to_path_buf());
+        let valid_path =
+            temp_dir.path().join("child").join("test.html");
+        assert!(g.validate(&valid_path, None).is_ok());
+        assert!(g
+            .validate(&temp_dir.path().join("test.html"), None)
+            .is_ok());
+    }
 }

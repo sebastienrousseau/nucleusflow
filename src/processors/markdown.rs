@@ -701,4 +701,60 @@ custom:
         assert!(!result.contains("<script>"));
         assert!(!result.contains("<iframe>"));
     }
+
+    #[test]
+    fn test_markdown_processor_auxiliary_and_coverage() {
+        use crate::ContentProcessor;
+
+        let processor = MarkdownProcessor::default()
+            .with_footnotes(true)
+            .with_config(ProcessorConfig {
+                sanitize: false,
+                toc: false,
+                ..Default::default()
+            });
+
+        // Test ContentProcessor trait methods
+        assert!(ContentProcessor::validate(
+            &processor,
+            "Valid content"
+        )
+        .is_ok());
+        let res = ContentProcessor::process(
+            &processor,
+            "# Hello\n\nContent[^1]\n\n[^1]: note",
+            None,
+        )
+        .unwrap();
+        assert!(res.contains("<h1>"));
+
+        // Title from H1 when frontmatter has no title
+        let h1_input = "# Derived Title\n\nSome body text";
+        let meta = processor.extract_metadata(h1_input).unwrap();
+        assert_eq!(meta.title, Some("Derived Title".to_string()));
+
+        // JSON-LD output when custom metadata is present
+        let custom_input =
+            "---\ncustom_item: true\n---\n# Post\n\nText";
+        let custom_res = Processor::process(
+            &processor,
+            custom_input.to_string(),
+            None,
+        )
+        .unwrap();
+        assert!(custom_res
+            .contains("<script type=\"application/ld+json\">"));
+
+        // TOC nested level transitions (e.g. H1 -> H3 -> H1)
+        let nested_toc_input =
+            "# Heading 1\n\n### Heading 3\n\n# Heading 1 again";
+        let toc_cfg = json!({"toc": true, "toc_max_level": 4});
+        let toc_res = Processor::process(
+            &processor,
+            nested_toc_input.to_string(),
+            Some(&toc_cfg),
+        )
+        .unwrap();
+        assert!(toc_res.contains("<nav class=\"toc\""));
+    }
 }

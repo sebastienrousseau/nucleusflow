@@ -1130,4 +1130,63 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn test_html_generator_auxiliary_and_coverage() -> Result<()> {
+        let temp_dir = TempDir::new()?;
+
+        // Default and Debug
+        let default_gen = HtmlGenerator::default();
+        let debug_str = format!("{:?}", default_gen);
+        assert!(debug_str.contains("HtmlGenerator"));
+
+        // get_config
+        let config = default_gen.get_config();
+        assert!(!config.minify);
+
+        // get_cached_assets
+        let cached = default_gen.get_cached_assets();
+        assert!(cached.is_empty());
+
+        // with_asset_dir non-existent directory
+        let bad_path = temp_dir.path().join("does_not_exist");
+        assert!(HtmlGenerator::new()
+            .with_asset_dir(&bad_path)
+            .is_err());
+
+        // process_html error on invalid HTML
+        let output_path = temp_dir.path().join("invalid.html");
+        assert!(default_gen
+            .generate("<div>Unclosed tag", &output_path, None)
+            .is_err());
+
+        // with_minification(false) and with_pretty_print(false)
+        let raw_gen = HtmlGenerator::new()
+            .with_minification(false)
+            .with_pretty_print(false);
+        let raw_output = temp_dir.path().join("raw.html");
+        raw_gen.generate(
+            "<div>Raw content</div>",
+            &raw_output,
+            None,
+        )?;
+        assert_eq!(
+            fs::read_to_string(raw_output)?.trim(),
+            "<div>Raw content</div>"
+        );
+
+        // update_metadata on file without head
+        let no_head_path = temp_dir.path().join("no_head.html");
+        fs::write(&no_head_path, "<div>Simple</div>")?;
+        default_gen.update_metadata(
+            &no_head_path,
+            json!({"author": "test"}),
+        )?;
+        let updated = fs::read_to_string(no_head_path)?;
+        assert!(
+            updated.contains(r#"<meta name="author" content="test">"#)
+        );
+
+        Ok(())
+    }
 }

@@ -363,4 +363,80 @@ mod tests {
         assert!(matches!(error, ProcessingError::Validation { .. }));
         assert!(error.to_string().contains("Invalid input"));
     }
+
+    #[test]
+    fn test_output_generation_error() {
+        let error = ProcessingError::output_generation(
+            "/out/index.html",
+            "Write failed",
+            None,
+        );
+        assert!(matches!(
+            error,
+            ProcessingError::OutputGeneration { .. }
+        ));
+        assert!(error.to_string().contains("Write failed"));
+        assert!(error.to_string().contains("/out/index.html"));
+    }
+
+    #[test]
+    fn test_serialization_error() {
+        let error =
+            ProcessingError::serialization("JSON corrupt", None);
+        assert!(matches!(error, ProcessingError::Serialization { .. }));
+        assert!(error.to_string().contains("JSON corrupt"));
+    }
+
+    #[test]
+    fn test_plugin_error() {
+        let error =
+            ProcessingError::plugin("sitemap", "Hook crashed", None);
+        assert!(matches!(error, ProcessingError::Plugin { .. }));
+        assert!(error.to_string().contains("sitemap"));
+        assert!(error.to_string().contains("Hook crashed"));
+    }
+
+    #[test]
+    fn test_internal_and_internal_error() {
+        let err1 = ProcessingError::internal("Logic error", None);
+        assert!(matches!(err1, ProcessingError::Internal { .. }));
+        assert!(err1.to_string().contains("Logic error"));
+
+        let err2 = ProcessingError::internal_error("Panic trapped");
+        assert!(matches!(err2, ProcessingError::InternalError(_)));
+        assert_eq!(err2.to_string(), "Internal error: Panic trapped");
+    }
+
+    #[test]
+    fn test_io_error_wrapper() {
+        let io_err =
+            Error::new(ErrorKind::PermissionDenied, "forbidden");
+        let error = ProcessingError::io_error(
+            PathBuf::from("/etc/shadow"),
+            io_err,
+        );
+        assert!(matches!(error, ProcessingError::IOError { .. }));
+        assert!(error.to_string().contains("/etc/shadow"));
+    }
+
+    #[test]
+    fn test_serde_json_error_conversion() {
+        let json_err =
+            serde_json::from_str::<serde_json::Value>("invalid json")
+                .unwrap_err();
+        let error: ProcessingError = json_err.into();
+        assert!(matches!(error, ProcessingError::Serialization { .. }));
+        assert!(error.to_string().contains("line"));
+    }
+
+    #[test]
+    fn test_file_not_found_variant() {
+        let err = ProcessingError::FileNotFound {
+            path: PathBuf::from("/missing/file.md"),
+            details: "does not exist".to_string(),
+        };
+        assert!(err
+            .to_string()
+            .contains("File not found: /missing/file.md"));
+    }
 }

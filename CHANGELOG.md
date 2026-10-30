@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.10] - 2026-10-30
+
+### Added
+
+- Embedded terminal lifecycle demo GIF in `README.md` following canonical standard.
+- Comprehensive unit test suites across `src/template.rs`, `src/core/config.rs`, `src/cli.rs`, `src/core/error.rs`, `src/core/traits.rs`, `src/generators/html.rs`, and `src/processors/markdown.rs`.
+- Code coverage expanded to over 92% across crate modules with zero compiler warnings.
+
+### Changed
+
+- Refactored CLI execution pathways to allow clean programmatic match execution and testing.
+- Synchronised crate and distribution packaging version to `0.0.10`.
+
 ## [0.0.9] - 2026-10-30
 
 ### Security
@@ -178,7 +191,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release of NucleusFlow content processing library.
 
-[Unreleased]: https://github.com/sebastienrousseau/nucleusflow/compare/v0.0.9...HEAD
+[Unreleased]: https://github.com/sebastienrousseau/nucleusflow/compare/v0.0.10...HEAD
+[0.0.10]: https://github.com/sebastienrousseau/nucleusflow/compare/v0.0.9...v0.0.10
 [0.0.9]: https://github.com/sebastienrousseau/nucleusflow/compare/v0.0.8...v0.0.9
 [0.0.8]: https://github.com/sebastienrousseau/nucleusflow/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/sebastienrousseau/nucleusflow/compare/v0.0.6...v0.0.7
