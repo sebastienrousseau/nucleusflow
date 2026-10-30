@@ -1,5 +1,5 @@
 Name:           nucleusflow
-Version:        0.0.8
+Version:        0.0.9
 Release:        1%{?dist}
 Summary:        High-performance, memory-safe static site generator written in Rust
 License:        Apache-2.0 OR MIT

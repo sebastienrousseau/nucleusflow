@@ -10,18 +10,24 @@
 
 ## Reporting a Vulnerability
 
-Report security vulnerabilities directly by emailing **sebastian.rousseau@gmail.com**.
+Report security vulnerabilities directly by emailing **sebastian.rousseau@gmail.com** or submitting a report through GitHub Private Vulnerability Reporting at:
+<https://github.com/sebastienrousseau/nucleusflow/security/advisories/new>
 
-Do not open a public issue for security reports.
+Do not open a public issue or discussion for security reports.
 
-Include:
-- A description of the vulnerability.
+Please include:
+- A description of the vulnerability and potential impact.
 - Steps to reproduce the issue.
 - Affected versions and configurations.
 - Proof-of-concept or exploit demonstration (if available).
 - Any suggested fix or remediation guidance.
 
-Expect an initial response within 48 hours. A remediation or coordinated disclosure plan will follow within 7 days of confirmation.
+### Disclosure Process and Timelines
+
+- **Initial Response**: Expect an acknowledgement within 48 hours.
+- **Triage and Assessment**: Confirmation and severity assessment within 5 business days.
+- **Remediation**: A fix and coordinated disclosure release will be prepared within 14 days of confirmation.
+- **Security Advisories**: Advisories will be published via GitHub Security Advisories at <https://github.com/sebastienrousseau/nucleusflow/security/advisories>.
 
 ## Security Architecture
 
