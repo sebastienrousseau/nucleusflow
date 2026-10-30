@@ -45,6 +45,8 @@ jobs:
 
       - name: Install Rust nightly
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # nightly
+        with:
+          toolchain: nightly
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@400e7407cfd7a091e5fbb6afec01ec146c432b7c # v2.7.7

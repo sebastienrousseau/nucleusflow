@@ -129,6 +129,7 @@ jobs:
       # equivalent and is what the rest of this workflow already uses.
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # stable
         with:
+          toolchain: stable
           targets: ${{ matrix.target }}
       - uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
@@ -228,6 +229,8 @@ jobs:
       # as too old to run; dtolnay/rust-toolchain is the maintained
       # equivalent.
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # stable
+        with:
+          toolchain: stable
 
       # Trusted publishing: swaps this job's GitHub OIDC identity for a
       # temporary crates.io token, revoked by the action's post step when
