@@ -38,6 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `deny.toml` allows Unicode-3.0 (ICU4X, unicode-ident,
   unicode-id-start) and Apache-2.0 WITH LLVM-exception
   (dragonbox_ecma), two permissive licences the allow list never named.
+- `pulldown-cmark` requires `>= 0.13.5` (resolved to `0.13.6` in
+  `Cargo.lock`), clearing RUSTSEC-2026-0414 (exponential event growth
+  with `ENABLE_WIKILINKS` in `0.13.4`).
+- `noyalib` is updated from `0.0.57` to `0.0.58`.
 
 ## [0.0.2] - 2026-10-11
 
