@@ -20,8 +20,8 @@
 #![crate_type = "lib"]
 #![forbid(unsafe_code)]
 
-use crate::core::error::{ProcessingError, Result};
 pub use crate::core::config::ConfigBuilder;
+use crate::core::error::{ProcessingError, Result};
 pub use crate::core::traits::Generator;
 use std::fs;
 use std::io::Write;
