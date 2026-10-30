@@ -13,7 +13,7 @@
 #![doc = include_str!("../README.md")]
 #![doc(
     html_favicon_url = "https://kura.pro/nucleusflow/images/favicon.ico",
-    html_logo_url = "https://kura.pro/nucleusflow/images/logos/nucleusflow.svg",
+    html_logo_url = "https://cloudcdn.pro/clients/nucleusflow/v1/logos/nucleusflow.svg",
     html_root_url = "https://docs.rs/nucleusflow"
 )]
 #![crate_name = "nucleusflow"]

@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.6] - 2026-10-30
+
+### Changed
+
+- Updated project logo asset URLs to CloudCDN (`https://cloudcdn.pro/clients/nucleusflow/v1/logos/nucleusflow.svg`) across documentation and rustdoc crate metadata.
+- Upgraded `parking_lot` dependency to `0.13.0`.
+- Updated GitHub Actions reusable CI pipeline workflow pinning to `83114142d0a14e9c6302a9ba9e716a0cc53e4e01`.
+
 ## [0.0.5] - 2026-10-30
 
 ### Added
