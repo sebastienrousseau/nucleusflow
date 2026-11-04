@@ -29,7 +29,7 @@ jobs:
           toolchain: nightly
 
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Generate documentation for all features and publish it
         run: |
@@ -39,7 +39,7 @@ jobs:
             echo '<html><head><meta http-equiv="refresh" content="0; url=/nucleusflow/"></head><body></body></html>' > ./target/doc/index.html
 
       - name: Deploy
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: documentation
           path: target/doc
@@ -50,7 +50,7 @@ jobs:
         run: echo 'doc.nucleusflow.com' > ./target/doc/CNAME
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@47f197a2200bb9de68ba5f48fad1c088eb1c4a32 # v4.0.0
+        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./target/doc
