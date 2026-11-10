@@ -24,7 +24,7 @@ permissions:
 jobs:
   ci:
     name: Rust CI
-    uses: sebastienrousseau/pipelines/.github/workflows/rust-ci.yml@83114142d0a14e9c6302a9ba9e716a0cc53e4e01 # main 2026-10-13
+    uses: sebastienrousseau/pipelines/.github/workflows/rust-ci.yml@3f9978aba68e59da1bd5a58d12fbaf142679fe5f # main 2026-10-13
     with:
       rust-version: 'stable'
       run-clippy: true
@@ -49,7 +49,7 @@ jobs:
           toolchain: nightly
 
       - name: Cache cargo
-        uses: Swatinem/rust-cache@f0deed1e0edfc6a9be95417288c0e1099b1eeec3 # v2.7.7
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
 
       - name: Run tests
         run: cargo test --all-features
