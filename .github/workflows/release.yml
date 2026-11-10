@@ -87,7 +87,7 @@ jobs:
     steps:
       - name: Authenticate with crates.io
         id: auth
-        uses: rust-lang/crates-io-auth-action@d6b091a10d7f9b30e4c05478289e94fb309882c5 # v1
+        uses: rust-lang/crates-io-auth-action@dc10531605597d48d51c6d1005a2b3861698940b # v1
 
       - name: Confirm a token was issued
         env:
@@ -243,7 +243,7 @@ jobs:
       # nucleusflow crate (repo + release.yml).
       - name: Authenticate with crates.io
         id: auth
-        uses: rust-lang/crates-io-auth-action@d6b091a10d7f9b30e4c05478289e94fb309882c5 # v1
+        uses: rust-lang/crates-io-auth-action@dc10531605597d48d51c6d1005a2b3861698940b # v1
 
       - name: Publish
         run: cargo publish
