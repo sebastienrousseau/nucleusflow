@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bumped the GitHub Actions pins: the shared `rust-ci.yml` pipeline to
   0.0.4, `Swatinem/rust-cache` to 2.9.3, `rust-lang/crates-io-auth-action`
   and `github/codeql-action/upload-sarif` to 4.39.3 (#78, #71).
+- rustix 1.1.6 in `Cargo.lock` (RUSTSEC-2026-0486, unsound).
 - Synchronised crate and distribution packaging version to `0.0.12`.
 
 ### Fixed
