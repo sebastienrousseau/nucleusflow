@@ -14,12 +14,12 @@ on:
 permissions: read-all
 
 jobs:
-  all:
+  build:
     name: Document
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
@@ -31,31 +31,34 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Generate documentation for all features and publish it
+      - name: Generate documentation for all features
         run: |
           RUSTDOCFLAGS="--cfg docsrs" \
             cargo doc --no-deps --all-features --workspace
-            # Write index.html with redirect
-            echo '<html><head><meta http-equiv="refresh" content="0; url=/nucleusflow/"></head><body></body></html>' > ./target/doc/index.html
+          # Write index.html with redirect
+          echo '<html><head><meta http-equiv="refresh" content="0; url=/nucleusflow/"></head><body></body></html>' > ./target/doc/index.html
 
-      - name: Deploy
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      # Pages is served from GitHub Actions (build_type: workflow); the
+      # custom domain doc.nucleusflow.com lives in the Pages settings.
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          name: documentation
           path: target/doc
-          if-no-files-found: error
-          retention-days: 1
 
-      - name: Write CNAME file
-        run: echo 'doc.nucleusflow.com' > ./target/doc/CNAME
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./target/doc
-          publish_branch: gh-pages
-          cname: true
-          commit_message: Deploy documentation at ${{ github.sha }}
-          user_name: github-actions
-          user_email: actions@users.noreply.github.com
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
