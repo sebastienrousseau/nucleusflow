@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.12] - 2026-11-22
+
+### Changed
+
+- Bumped `noyalib` from 0.0.58 to 0.0.62 (#82), `clap` from 4.6.7 to
+  4.6.8 (#81), `toml` from 1.1.8 to 1.2.0 (#76), and `log` from 0.4.34
+  to 0.4.35 (#72).
+- Bumped the GitHub Actions pins: the shared `rust-ci.yml` pipeline to
+  0.0.4, `Swatinem/rust-cache` to 2.9.3, `rust-lang/crates-io-auth-action`
+  and `github/codeql-action/upload-sarif` to 4.39.3 (#78, #71).
+- rustix 1.1.6 in `Cargo.lock` (RUSTSEC-2026-0486, unsound).
+- Removed the unused `html5ever` dependency and moved `tempfile` to
+  dev-dependencies, clearing Cargo's `unused_dependencies` warnings.
+- Synchronised crate and distribution packaging version to `0.0.12`.
+
+### Fixed
+
+- The documentation workflow now deploys `doc.nucleusflow.com` with
+  the official GitHub Pages actions. Pages is served from GitHub
+  Actions, so the previous push to the `gh-pages` branch was no longer
+  published.
+
 ## [0.0.11] - 2026-10-30
 
 ### Fixed

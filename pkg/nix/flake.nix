@@ -14,7 +14,7 @@
       {
         packages.default = pkgs.rustPlatform.buildRustPackage {
           pname = "nucleusflow";
-          version = "0.0.11";
+          version = "0.0.12";
 
           src = ./../..;
 

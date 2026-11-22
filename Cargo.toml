@@ -5,7 +5,7 @@
 [package]
 # General project metadata
 name = "nucleusflow"                       # The name of the library
-version = "0.0.11"                         # The version of the crate
+version = "0.0.12"                         # The version of the crate
 authors = ["NucleusFlow Contributors"]     # Library contributors
 edition = "2021"                           # Rust edition being used
 rust-version = "1.89.0"                    # Minimum supported Rust version
@@ -82,6 +82,7 @@ assert_cmd = "2.0"                          # Test command-line applications
 criterion = "0.8"                           # Benchmarking library to test performance
 predicates = "3.1.2"                          # Predicate testing library
 proptest = "1.6"                            # Property testing library
+tempfile = "3.13"                           # Temporary directories for tests
 
 # -----------------------------------------------------------------------------
 # Dependencies
@@ -93,15 +94,13 @@ anyhow = "1.0"
 clap = { version = "4.5", features = ["derive"] }
 env_logger = "0.11"
 handlebars = "6.2"
-html5ever = "0.40"
 log = "0.4"
 minify-html = "0.18.1"
 parking_lot = "0.13"
 pulldown-cmark = "0.13.5"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-noyalib = { version = "0.0.58", default-features = false, features = ["std"] }
-tempfile = "3.13"
+noyalib = { version = "0.0.62", default-features = false, features = ["std"] }
 thiserror = "2.0"
 toml = "1.1"
 
