@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   0.0.4, `Swatinem/rust-cache` to 2.9.3, `rust-lang/crates-io-auth-action`
   and `github/codeql-action/upload-sarif` to 4.39.3 (#78, #71).
 - rustix 1.1.6 in `Cargo.lock` (RUSTSEC-2026-0486, unsound).
+- Removed the unused `html5ever` dependency and moved `tempfile` to
+  dev-dependencies, clearing Cargo's `unused_dependencies` warnings.
 - Synchronised crate and distribution packaging version to `0.0.12`.
 
 ### Fixed
